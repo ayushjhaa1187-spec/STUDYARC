@@ -77,3 +77,48 @@ CREATE POLICY "Users can insert own tasks" ON public.tasks FOR INSERT WITH CHECK
 CREATE POLICY "Users can update own tasks" ON public.tasks FOR UPDATE USING (
     EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
 );
+
+-- PHASE 3: SPRINT DASHBOARD & EXECUTION --
+
+-- 5. Chat History (AI Coach Transcripts)
+CREATE TABLE public.chat_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    sprint_id UUID REFERENCES public.sprints(id) ON DELETE CASCADE,
+    sender TEXT CHECK (sender IN ('user', 'ai')),
+    message TEXT NOT NULL,
+    code_snippet TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 6. Artifact Submissions (Project Code)
+CREATE TABLE public.artifact_submissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    sprint_id UUID REFERENCES public.sprints(id) ON DELETE CASCADE,
+    github_url TEXT NOT NULL,
+    live_url TEXT,
+    self_assessment TEXT NOT NULL,
+    status TEXT DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'verified', 'needs_work')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 7. Sprint Progress (Real-time Tracking)
+CREATE TABLE public.sprint_progress (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    sprint_id UUID REFERENCES public.sprints(id) ON DELETE CASCADE,
+    current_day INTEGER DEFAULT 1,
+    streak_days INTEGER DEFAULT 0,
+    completion_percentage INTEGER DEFAULT 0,
+    last_activity_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- RLS Policies for Phase 3 Tables
+ALTER TABLE public.chat_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.artifact_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sprint_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own chat history" ON public.chat_history FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own artifact submissions" ON public.artifact_submissions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own sprint progress" ON public.sprint_progress FOR ALL USING (auth.uid() = user_id);

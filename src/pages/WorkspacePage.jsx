@@ -9,15 +9,18 @@ import {
   Plus, 
   CheckCircle2, 
   BarChart2, 
-  Layers 
+  Layers,
+  Upload
 } from 'lucide-react';
 import AICoachPanel from '../components/AICoachPanel';
 import { DAILY_TASKS } from '../data/mockData';
+import ArtifactSubmissionModal from '../components/ArtifactSubmissionModal';
 
 export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState('Today');
   const [tasks, setTasks] = useState(DAILY_TASKS);
   const [showAIChat, setShowAIChat] = useState(true);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const toggleTask = (id) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -173,6 +176,13 @@ export default function WorkspacePage() {
                 style={{ width: `${(completedCount / tasks.length) * 100}%` }}
               ></div>
             </div>
+            <button
+              onClick={() => setIsSubmitModalOpen(true)}
+              className="mt-4 w-full flex items-center justify-center space-x-2 rounded-lg bg-emerald-500/10 py-3 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 transition"
+            >
+              <Upload className="h-4 w-4" />
+              <span>Submit Final Challenge Artifact</span>
+            </button>
           </div>
 
         </div>
@@ -185,6 +195,11 @@ export default function WorkspacePage() {
         )}
 
       </div>
+
+      <ArtifactSubmissionModal 
+        isOpen={isSubmitModalOpen} 
+        onClose={() => setIsSubmitModalOpen(false)} 
+      />
     </div>
   );
 }

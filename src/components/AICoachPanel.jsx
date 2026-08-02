@@ -34,7 +34,7 @@ export default function AICoachPanel() {
     "Explain vector embeddings"
   ];
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const query = textToSend || input;
     if (!query.trim()) return;
 
@@ -49,31 +49,40 @@ export default function AICoachPanel() {
     if (!textToSend) setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      setIsTyping(false);
-      let aiResponseText = "I've analyzed your query regarding: '" + query + "'. Here is the optimal execution step:";
-      let snippet = null;
+    try {
+      const res = await fetch('http://localhost:3001/api/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: query, context: "Implement vector search chunking strategy" })
+      });
 
-      if (query.toLowerCase().includes('debug')) {
-        aiResponseText = "Check line 42 in your vector pipeline. It looks like `qdrant_client.search()` is missing your collection payload filter.";
-        snippet = "results = client.search(\n    collection_name=\"tech_docs\",\n    query_vector=embedding,\n    limit=5\n)";
-      } else if (query.toLowerCase().includes('task')) {
-        aiResponseText = "Next logical step: Connect your streaming FastAPI endpoint to the React UI using EventSource SSE.";
-      } else {
-        aiResponseText = "Great progress on your execution plan! You have completed 2 out of 4 daily subtasks. Keep your streak alive!";
-      }
+      if (!res.ok) throw new Error('Failed to fetch from coach API');
+      const data = await res.json();
 
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           sender: 'ai',
-          text: aiResponseText,
-          codeSnippet: snippet,
+          text: data.text,
+          codeSnippet: data.codeSnippet || null,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'ai',
+          text: "I'm currently unable to connect to the backend server. Please check if the API is running.",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (

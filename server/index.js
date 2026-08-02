@@ -73,6 +73,40 @@ app.post('/api/diagnostic', async (req, res) => {
   }
 });
 
+app.post('/api/coach', async (req, res) => {
+  try {
+    const { message, context } = req.body;
+    
+    const prompt = `
+      You are an expert AI execution coach helping a user with their sprint task.
+      Context: ${context || 'Working on a technical sprint.'}
+      User asks: ${message}
+
+      Provide a concise, highly technical response. Include a short code snippet if relevant.
+      Format the response strictly as JSON:
+      {
+        "text": "Your advice here...",
+        "codeSnippet": "Optional code snippet here, or null"
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    let textResponse = result.response.text().trim();
+    
+    if (textResponse.startsWith('\`\`\`json')) textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '');
+    else if (textResponse.startsWith('\`\`\`')) textResponse = textResponse.replace(/\`\`\`/g, '');
+
+    const jsonResponse = JSON.parse(textResponse);
+    res.json(jsonResponse);
+  } catch (error) {
+    console.error('Gemini API Error (Coach):', error.message);
+    res.json({
+      text: "I analyzed your query: '" + req.body.message + "'. Make sure to verify your endpoint connections and check for syntax errors in your router.",
+      codeSnippet: "console.log('Debugging connection...');\n// Fallback coach response active"
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Secure Backend API running on http://localhost:${PORT}`);
 });
