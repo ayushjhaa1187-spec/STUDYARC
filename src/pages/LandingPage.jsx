@@ -45,7 +45,7 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
         <PricingSection openDiagnostic={openDiagnostic} />
         <FinalCtaSection openDiagnostic={openDiagnostic} />
       </main>
-      <ClassicFooter />
+      <ClassicFooter setActivePage={setActivePage} />
     </div>
   );
 }

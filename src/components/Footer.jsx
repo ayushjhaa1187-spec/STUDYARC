@@ -61,7 +61,7 @@ export default function Footer({ setActivePage }) {
               <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-amber transition">Documentation</button></li>
               <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-amber transition">Gemini Setup Guide</button></li>
               <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-amber transition">Open Source</button></li>
-              <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-amber transition">Pricing</button></li>
+              <li><button onClick={(e) => handleNav(e, '/pricing')} className="text-xs text-slate-400 hover:text-brand-amber transition">Pricing</button></li>
             </ul>
           </div>
 
@@ -69,9 +69,9 @@ export default function Footer({ setActivePage }) {
           <div>
             <h3 className="text-sm font-bold text-white mb-4 font-mono uppercase tracking-wider">Legal</h3>
             <ul className="space-y-3">
-              <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-pink transition">Privacy Policy</button></li>
-              <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-pink transition">Terms of Service</button></li>
-              <li><button onClick={handleExternal} className="text-xs text-slate-400 hover:text-brand-pink transition">Cookie Policy</button></li>
+              <li><button onClick={(e) => handleNav(e, '/privacy')} className="text-xs text-slate-400 hover:text-brand-pink transition">Privacy Policy</button></li>
+              <li><button onClick={(e) => handleNav(e, '/terms')} className="text-xs text-slate-400 hover:text-brand-pink transition">Terms of Service</button></li>
+              <li><button onClick={(e) => handleNav(e, '/privacy')} className="text-xs text-slate-400 hover:text-brand-pink transition">Cookie Policy</button></li>
             </ul>
           </div>
 

@@ -54,19 +54,35 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Protected routes: /onboarding, /dashboard
-  if (request.nextUrl.pathname.startsWith('/onboarding') && !session) {
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
+  const isWebhook = request.nextUrl.pathname.startsWith('/api/webhooks/');
+  
+  if (isApiRoute && !isWebhook && !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/onboarding') || request.nextUrl.pathname.startsWith('/dashboard');
+  if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // If logged in, redirect from login/signup to /onboarding/diagnostic
-  if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') && session) {
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const role = user?.user_metadata?.role || user?.app_metadata?.role || user?.raw_app_meta_data?.role;
+    if (!user || role !== 'admin') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // If logged in, redirect from login/signup to /onboarding/diagnostic (or dashboard)
+  if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') && user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/onboarding/diagnostic';
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 

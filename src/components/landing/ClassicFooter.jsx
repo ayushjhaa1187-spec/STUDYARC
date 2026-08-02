@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-export default function ClassicFooter() {
+export default function ClassicFooter({ setActivePage }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -14,9 +14,9 @@ export default function ClassicFooter() {
           <div className="md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <div className="h-10 w-10 overflow-hidden rounded-lg bg-brand-emerald flex items-center justify-center p-0.5 shadow-sm">
-                <img src="/logo.png" alt="STUDYARC Logo" className="h-full w-full object-cover rounded-lg" />
+                <img src="/logo.png" alt="SkillBridgePro Logo" className="h-full w-full object-cover rounded-lg" />
               </div>
-              <span className="text-2xl font-bold text-white uppercase">STUDYARC</span>
+              <span className="text-2xl font-bold text-white uppercase tracking-tight">SkillBridgePro</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               AI-powered career execution platform helping students and freshers build verified portfolios and land their dream jobs.
@@ -38,30 +38,30 @@ export default function ClassicFooter() {
           <div>
             <h4 className="text-lg font-semibold mb-6">Product</h4>
             <ul className="space-y-4">
-              <li><a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">Features</a></li>
-              <li><a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm">Pricing</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Expert Marketplace</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Verified Portfolio</a></li>
+              <li><button onClick={() => setActivePage('/features')} className="text-gray-400 hover:text-white transition-colors text-sm">Features</button></li>
+              <li><button onClick={() => setActivePage('/pricing')} className="text-gray-400 hover:text-white transition-colors text-sm">Pricing</button></li>
+              <li><button onClick={() => setActivePage('/marketplace')} className="text-gray-400 hover:text-white transition-colors text-sm">Expert Marketplace</button></li>
+              <li><button onClick={() => setActivePage('/portfolio')} className="text-gray-400 hover:text-white transition-colors text-sm">Verified Portfolio</button></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-lg font-semibold mb-6">Resources</h4>
             <ul className="space-y-4">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Career Guides</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Success Stories</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Help Center</a></li>
+              <li><button onClick={() => setActivePage('/blog')} className="text-gray-400 hover:text-white transition-colors text-sm">Blog</button></li>
+              <li><button onClick={() => setActivePage('/guides')} className="text-gray-400 hover:text-white transition-colors text-sm">Career Guides</button></li>
+              <li><button onClick={() => setActivePage('/success-stories')} className="text-gray-400 hover:text-white transition-colors text-sm">Success Stories</button></li>
+              <li><button onClick={() => setActivePage('/help')} className="text-gray-400 hover:text-white transition-colors text-sm">Help Center</button></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-lg font-semibold mb-6">Company</h4>
             <ul className="space-y-4">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Careers</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a></li>
+              <li><button onClick={() => setActivePage('/about')} className="text-gray-400 hover:text-white transition-colors text-sm">About Us</button></li>
+              <li><button onClick={() => setActivePage('/careers')} className="text-gray-400 hover:text-white transition-colors text-sm">Careers</button></li>
+              <li><button onClick={() => setActivePage('/privacy')} className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</button></li>
+              <li><button onClick={() => setActivePage('/terms')} className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</button></li>
             </ul>
           </div>
 
@@ -69,12 +69,12 @@ export default function ClassicFooter() {
 
         <div className="pt-8 border-t border-gray-800 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            &copy; {currentYear} STUDYARC. All rights reserved.
+            &copy; {currentYear} SkillBridgePro. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <a href="#" className="text-gray-500 hover:text-white text-sm transition-colors">Privacy</a>
-            <a href="#" className="text-gray-500 hover:text-white text-sm transition-colors">Terms</a>
-            <a href="#" className="text-gray-500 hover:text-white text-sm transition-colors">Cookies</a>
+            <button onClick={() => setActivePage('/privacy')} className="text-gray-500 hover:text-white text-sm transition-colors">Privacy</button>
+            <button onClick={() => setActivePage('/terms')} className="text-gray-500 hover:text-white text-sm transition-colors">Terms</button>
+            <button onClick={() => setActivePage('/privacy')} className="text-gray-500 hover:text-white text-sm transition-colors">Cookies</button>
           </div>
         </div>
 

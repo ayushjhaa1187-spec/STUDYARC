@@ -16,6 +16,7 @@ import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
+import GenericPage from './pages/GenericPage';
 
 import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
@@ -157,6 +158,26 @@ export default function App() {
 
               {activePage === '/admin' && (
                 <AdminDashboard />
+              )}
+
+              {/* Missing Footer Pages */}
+              {['/features', '/pricing', '/marketplace', '/blog', '/guides', '/success-stories', '/help', '/about', '/careers', '/privacy', '/terms'].includes(activePage) && (
+                <GenericPage 
+                  title={
+                    activePage === '/features' ? 'Features' :
+                    activePage === '/pricing' ? 'Pricing' :
+                    activePage === '/marketplace' ? 'Expert Marketplace' :
+                    activePage === '/blog' ? 'Blog' :
+                    activePage === '/guides' ? 'Career Guides' :
+                    activePage === '/success-stories' ? 'Success Stories' :
+                    activePage === '/help' ? 'Help Center' :
+                    activePage === '/about' ? 'About Us' :
+                    activePage === '/careers' ? 'Careers' :
+                    activePage === '/privacy' ? 'Privacy Policy' :
+                    'Terms of Service'
+                  } 
+                  setActivePage={handlePageChange} 
+                />
               )}
             </>
           )}
