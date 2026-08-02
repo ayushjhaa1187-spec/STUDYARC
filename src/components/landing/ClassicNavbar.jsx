@@ -16,8 +16,11 @@ export default function ClassicNavbar({ openDiagnostic, setActivePage }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => { setActivePage('/'); lenis?.scrollTo(0); }}>
-            <span className="text-2xl font-bold text-classic-primary">SkillBridge<span className="text-classic-accent">Pro</span></span>
+          <div className="flex-shrink-0 flex items-center cursor-pointer space-x-3" onClick={() => { setActivePage('/'); lenis?.scrollTo(0); }}>
+            <div className="h-10 w-10 overflow-hidden rounded-lg bg-brand-emerald flex items-center justify-center p-0.5 shadow-sm">
+              <img src="/logo.png" alt="STUDYARC Logo" className="h-full w-full object-cover rounded-lg" />
+            </div>
+            <span className="text-2xl font-bold text-classic-primary uppercase">STUDYARC</span>
           </div>
           
           <div className="hidden md:flex space-x-8">

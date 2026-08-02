@@ -12,9 +12,12 @@ export default function ClassicFooter() {
           
           {/* Brand Column */}
           <div className="md:col-span-1">
-            <span className="text-2xl font-bold text-white mb-6 inline-block">
-              SkillBridge<span className="text-classic-accent">Pro</span>
-            </span>
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="h-10 w-10 overflow-hidden rounded-lg bg-brand-emerald flex items-center justify-center p-0.5 shadow-sm">
+                <img src="/logo.png" alt="STUDYARC Logo" className="h-full w-full object-cover rounded-lg" />
+              </div>
+              <span className="text-2xl font-bold text-white uppercase">STUDYARC</span>
+            </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               AI-powered career execution platform helping students and freshers build verified portfolios and land their dream jobs.
             </p>
@@ -66,7 +69,7 @@ export default function ClassicFooter() {
 
         <div className="pt-8 border-t border-gray-800 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            &copy; {currentYear} SkillBridge Pro. All rights reserved.
+            &copy; {currentYear} STUDYARC. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <a href="#" className="text-gray-500 hover:text-white text-sm transition-colors">Privacy</a>
