@@ -2,6 +2,60 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
+@theme {
+  --color-bright-bg: #0C0F14;
+  --color-bright-surface: #12161D;
+  --color-bright-card: #161B24;
+  --color-bright-cardLight: #1C2230;
+  --color-bright-border: #262E3C;
+  
+  --color-brand-teal: #35C7B8;
+  --color-brand-cyan: #06d6a0;
+  --color-brand-amber: #F2A93B;
+  --color-brand-indigo: #7C8CF0;
+  --color-brand-coral: #E2705C;
+  --color-brand-violet: #8b5cf6;
+
+  --color-classic-primary: #1A365D;
+  --color-classic-primaryLight: #2B6CB0;
+  --color-classic-accent: #3182CE;
+  --color-classic-success: #38A169;
+  --color-classic-warning: #D69E2E;
+  --color-classic-bg: #F7FAFC;
+  --color-classic-card: #FFFFFF;
+  --color-classic-textPrimary: #1A202C;
+  --color-classic-textSecondary: #4A5568;
+  --color-classic-border: #E2E8F0;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: '"Space Grotesk"', sans-serif;
+  --font-mono: '"IBM Plex Mono"', monospace;
+
+  --shadow-classic-card: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-classic-btn: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-classic-modal: 0 20px 60px rgba(0,0,0,0.15);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 1.8s infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-ticker: ticker 30s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes float-up {
+    0% { transform: translateY(100vh) scale(0.9); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) scale(1); opacity: 0; }
+  }
+}
+
 :root {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color-scheme: dark;
