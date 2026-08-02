@@ -31,24 +31,45 @@ export default function DiagnosticModal({ isOpen, onClose, onComplete }) {
     }
   };
 
-  const runAnalysis = () => {
+  const runAnalysis = async () => {
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      const score = Math.floor(Math.random() * 20) + 65; // score between 65 and 85
+    try {
+      const response = await fetch('http://localhost:3001/api/diagnostic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetRole,
+          hours,
+          selectedSkills
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API Error');
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      // Fallback if backend is down or fails
       setResult({
-        score,
+        score: 75,
         targetRole,
-        recommendedJourney: targetRole === 'AI Engineer' ? 'AI Internship Portfolio Sprint' : 'Full-Stack Job-Ready Sprint',
-        timeToProof: '30 Days',
+        recommendedJourney: 'Error: API Unavailable - Mock Sprint',
+        timeToProof: 'N/A',
         gapAnalysis: [
-          'Strong foundational knowledge in ' + selectedSkills.slice(0, 2).join(', '),
-          'Missing production evidence in multi-agent error handling',
-          'Requires 1 human expert code roast for verified status'
+          'Failed to connect to the backend server.',
+          'Please ensure the Express server is running on port 3001.',
+          'Check the console logs for details.'
         ]
       });
+    } finally {
+      setIsAnalyzing(false);
       setStep(4);
-    }, 1800);
+    }
   };
 
   return (

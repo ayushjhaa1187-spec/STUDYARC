@@ -1,0 +1,79 @@
+-- Supabase Schema for Phase 2: Core User Flow & Diagnostic
+
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. Users Table (extends Supabase Auth)
+CREATE TABLE public.users (
+    id UUID REFERENCES auth.users(id) PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT,
+    avatar_url TEXT,
+    reputation_score INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 2. Assessments Table (Stores Diagnostic Results)
+CREATE TABLE public.assessments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    target_role TEXT NOT NULL,
+    weekly_hours INTEGER NOT NULL,
+    skills JSONB NOT NULL,
+    readiness_score INTEGER NOT NULL,
+    recommended_journey TEXT NOT NULL,
+    gap_analysis JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 3. Sprints Table (Active Execution Sprints)
+CREATE TABLE public.sprints (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'dropped')),
+    started_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 4. Tasks Table (Sprint Sub-tasks)
+CREATE TABLE public.tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    sprint_id UUID REFERENCES public.sprints(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    is_completed BOOLEAN DEFAULT false,
+    proof_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- ROW LEVEL SECURITY (RLS) POLICIES
+
+-- Enable RLS on all tables
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assessments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sprints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+
+-- Users can only read and update their own profile
+CREATE POLICY "Users can view own profile" ON public.users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
+
+-- Users can only manage their own assessments
+CREATE POLICY "Users can view own assessments" ON public.assessments FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own assessments" ON public.assessments FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can only manage their own sprints
+CREATE POLICY "Users can view own sprints" ON public.sprints FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own sprints" ON public.sprints FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own sprints" ON public.sprints FOR UPDATE USING (auth.uid() = user_id);
+
+-- Users can only manage tasks within their own sprints
+CREATE POLICY "Users can view own tasks" ON public.tasks FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+);
+CREATE POLICY "Users can insert own tasks" ON public.tasks FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+);
+CREATE POLICY "Users can update own tasks" ON public.tasks FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+);

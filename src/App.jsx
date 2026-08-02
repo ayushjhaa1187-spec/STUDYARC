@@ -181,7 +181,7 @@ export default function App() {
         </main>
       </div>
       
-      <Footer />
+      <Footer setActivePage={setActivePage} />
 
       {/* Global Interactive Modals */}
       <DiagnosticModal
