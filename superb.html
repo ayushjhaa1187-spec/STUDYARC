@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillBridge Pro — AI Career Execution Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0C0F14;
+    --bg-elevated:#12161D;
+    --surface:#161B24;
+    --surface-2:#1C2230;
+    --border:#262E3C;
+    --text:#E8EBF0;
+    --text-secondary:#9BA5B4;
+    --text-muted:#66707F;
+    --amber:#F2A93B;
+    --teal:#35C7B8;
+    --indigo:#7C8CF0;
+    --coral:#E2705C;
+    --radius:12px;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.65;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--text);
+    line-height:1.2;
+    margin:0;
+  }
+  a{color:var(--teal);}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+  code, .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Bridge motif (hero) ---------- */
+  .bridge-line{width:100%;height:34px;display:block;}
+
+  /* ---------- Header / Hero ---------- */
+  header.hero{
+    padding:72px 0 40px;
+    border-bottom:1px solid var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-size:.72rem;
+    color:var(--teal);
+    font-weight:600;
+  }
+  header.hero h1{
+    font-size:clamp(2.1rem,5vw,3.2rem);
+    font-weight:700;
+    margin-top:14px;
+    letter-spacing:-0.01em;
+  }
+  header.hero h1 span{color:var(--amber);}
+  .hero-sub{
+    color:var(--text-secondary);
+    font-size:1.08rem;
+    max-width:62ch;
+    margin-top:14px;
+  }
+  .pitch-card{
+    margin-top:32px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:3px solid var(--amber);
+    border-radius:var(--radius);
+    padding:24px 26px;
+  }
+  .pitch-card p{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.18rem;
+    font-weight:500;
+    color:var(--text);
+    margin:0;
+  }
+  .badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    color:var(--text-secondary);
+    border:1px solid var(--border);
+    background:var(--bg-elevated);
+    padding:7px 12px;
+    border-radius:999px;
+  }
+  .badge b{color:var(--teal);font-weight:600;}
+
+  /* ---------- Nav ---------- */
+  nav.toc{
+    position:sticky;top:0;z-index:50;
+    background:rgba(12,15,20,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  nav.toc .wrap{
+    display:flex;align-items:center;gap:4px;
+    overflow-x:auto;
+    padding:12px 28px;
+    scrollbar-width:none;
+  }
+  nav.toc .wrap::-webkit-scrollbar{display:none;}
+  nav.toc a{
+    flex:0 0 auto;
+    text-decoration:none;
+    color:var(--text-muted);
+    font-size:.82rem;
+    font-weight:500;
+    padding:7px 12px;
+    border-radius:7px;
+    white-space:nowrap;
+    transition:color .15s, background .15s;
+  }
+  nav.toc a:hover{color:var(--text);background:var(--surface);}
+  nav.toc a.active{color:var(--bg);background:var(--teal);font-weight:600;}
+  .print-btn{
+    margin-left:auto;flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.75rem;
+    color:var(--text-secondary);
+    background:transparent;
+    border:1px solid var(--border);
+    padding:7px 12px;border-radius:7px;
+    cursor:pointer;
+  }
+  .print-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+  /* ---------- Sections ---------- */
+  section{
+    padding:56px 0;
+    border-bottom:1px solid var(--border);
+  }
+  section:last-of-type{border-bottom:none;}
+  .sec-head{margin-bottom:28px;}
+  .sec-head .eyebrow{margin-bottom:8px;display:block;}
+  .sec-head h2{font-size:clamp(1.5rem,3vw,1.9rem);font-weight:700;}
+  .lede{color:var(--text-secondary);max-width:72ch;margin-top:10px;font-size:1rem;}
+
+  h3.sub{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.05rem;font-weight:600;
+    color:var(--text);
+    margin:28px 0 12px;
+  }
+  p{color:var(--text-secondary);max-width:74ch;}
+  strong{color:var(--text);}
+
+  /* ---------- Callouts / boxes ---------- */
+  .callout{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:18px 0;
+  }
+  .callout.warn{border-left:3px solid var(--coral);}
+  .callout.good{border-left:3px solid var(--teal);}
+  .callout p{margin:0;max-width:none;}
+  .callout ul{margin:8px 0 0;padding-left:20px;}
+
+  /* ---------- Diagrams ---------- */
+  .diagram{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    margin:20px 0 8px;
+    overflow-x:auto;
+  }
+  .diagram-cap{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.75rem;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
+  .mermaid{min-width:640px;}
+
+  /* ---------- Tables ---------- */
+  .table-scroll{overflow-x:auto;margin:18px 0;border:1px solid var(--border);border-radius:var(--radius);}
+  table{
+    width:100%;border-collapse:collapse;
+    background:var(--surface);
+    font-size:.92rem;
+    min-width:560px;
+  }
+  thead th{
+    font-family:'IBM Plex Mono',monospace;
+    text-transform:uppercase;
+    font-size:.72rem;
+    letter-spacing:.06em;
+    color:var(--teal);
+    text-align:left;
+    background:var(--bg-elevated);
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:13px 16px;
+    border-bottom:1px solid var(--border);
+    color:var(--text-secondary);
+    vertical-align:top;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  tbody td:first-child{color:var(--text);font-weight:500;}
+  td.num{font-family:'IBM Plex Mono',monospace;color:var(--amber);white-space:nowrap;}
+
+  /* ---------- Lists ---------- */
+  .check-list{list-style:none;padding:0;margin:14px 0;}
+  .check-list li{
+    position:relative;padding:8px 0 8px 30px;
+    color:var(--text-secondary);
+    border-bottom:1px dashed var(--border);
+  }
+  .check-list li:last-child{border-bottom:none;}
+  .check-list.yes li::before{
+    content:"✓";position:absolute;left:0;top:8px;
+    color:var(--teal);font-weight:700;
+    width:18px;height:18px;text-align:center;font-size:.85rem;
+  }
+  .check-list.no li::before{
+    content:"–";position:absolute;left:0;top:8px;
+    color:var(--coral);font-weight:700;
+    width:18px;height:18px;text-align:center;font-size:.95rem;
+  }
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media (max-width:720px){.two-col{grid-template-columns:1fr;}}
+
+  /* ---------- Example card ---------- */
+  .example-card{
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin:20px 0;
+  }
+  .example-card .who{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.75rem;color:var(--indigo);
+    text-transform:uppercase;letter-spacing:.08em;
+    margin-bottom:10px;display:block;
+  }
+  .example-card ol{margin:0;padding-left:20px;color:var(--text-secondary);}
+  .example-card li{padding:4px 0;}
+
+  /* ---------- Code block ---------- */
+  pre.econ{
+    background:#080A0D;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    overflow-x:auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.86rem;
+    color:var(--text-secondary);
+    line-height:1.7;
+  }
+  pre.econ .total{color:var(--amber);font-weight:600;}
+  pre.econ .figure{color:var(--teal);}
+
+  /* ---------- Footer ---------- */
+  footer{padding:40px 0 60px;text-align:center;}
+  footer p{color:var(--text-muted);font-size:.82rem;margin:0 auto;max-width:60ch;}
+
+  /* ---------- Back to top ---------- */
+  #top-btn{
+    position:fixed;bottom:24px;right:24px;
+    width:42px;height:42px;border-radius:50%;
+    background:var(--surface);border:1px solid var(--border);
+    color:var(--text-secondary);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;opacity:0;pointer-events:none;
+    transition:opacity .2s;
+    font-size:1.1rem;
+    z-index:40;
+  }
+  #top-btn.show{opacity:1;pointer-events:auto;}
+  #top-btn:hover{color:var(--teal);border-color:var(--teal);}
+
+  @media print{
+    nav.toc,#top-btn{display:none;}
+    section{break-inside:avoid;}
+    body{background:#fff;color:#111;}
+  }
+  @media (max-width:640px){
+    header.hero{padding:52px 0 32px;}
+    section{padding:40px 0;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <svg class="bridge-line" viewBox="0 0 1080 34" preserveAspectRatio="none">
+    <line x1="0" y1="6" x2="1080" y2="6" stroke="#262E3C" stroke-width="1"/>
+    <g stroke="#35C7B8" stroke-width="1.4" opacity="0.55">
+      <line x1="40" y1="6" x2="40" y2="26"/>
+      <line x1="140" y1="6" x2="140" y2="20"/>
+      <line x1="240" y1="6" x2="240" y2="30"/>
+      <line x1="340" y1="6" x2="340" y2="18"/>
+      <line x1="440" y1="6" x2="440" y2="26"/>
+      <line x1="540" y1="6" x2="540" y2="14"/>
+      <line x1="640" y1="6" x2="640" y2="26"/>
+      <line x1="740" y1="6" x2="740" y2="20"/>
+      <line x1="840" y1="6" x2="840" y2="30"/>
+      <line x1="940" y1="6" x2="940" y2="18"/>
+      <line x1="1040" y1="6" x2="1040" y2="26"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <span class="eyebrow">Internal planning document · team share</span>
+    <h1>Skill<span>Bridge</span> Pro</h1>
+    <p class="hero-sub">An AI career execution platform — full concept, workflows, revenue model, build systems, and launch offer, in one place for the team.</p>
+    <div class="pitch-card">
+      <p>“SkillBridge Pro is an AI-powered career execution marketplace that diagnoses a learner's goal, creates a personalized action sprint, provides practical projects and AI coaching, and connects the learner to vetted experts exactly when human guidance is needed.”</p>
+    </div>
+    <div class="badge-row">
+      <span class="badge">Wedge: <b>Indian college students &amp; freshers</b></span>
+      <span class="badge">Model: <b>Astrotalk + Coursera + Udemy</b></span>
+      <span class="badge">Core loop: <b>Diagnose → Sprint → Coach → Expert → Proof</b></span>
+      <span class="badge">Moat: <b>the outcome graph</b></span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#concept">1. Concept</a>
+    <a href="#model-visual">2. Business model</a>
+    <a href="#three-models">3. Three models</a>
+    <a href="#journey">4. User journey</a>
+    <a href="#revenue">5. Revenue</a>
+    <a href="#systems">6. Systems</a>
+    <a href="#mvp">7. MVP scope</a>
+    <a href="#growth">8. Growth loop</a>
+    <a href="#metrics">9. Metrics</a>
+    <a href="#trust">10. Trust &amp; safety</a>
+    <a href="#launch">11. Launch offer</a>
+    <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- 1. CONCEPT -->
+  <section id="concept">
+    <div class="sec-head">
+      <span class="eyebrow">01</span>
+      <h2>Platform concept</h2>
+      <p class="lede">Build this as an AI Career Execution Platform — not another course marketplace. It should take a student from "I want a job / freelance opportunity / skill" to a verified outcome: a learning plan, projects, portfolio, expert feedback, and relevant paid opportunities. The essential startup rule: start with one narrow user segment and validate an MVP before building a wide platform.</p>
+    </div>
+
+    <h3 class="sub">Initial niche — do not start broad</h3>
+    <div class="callout good">
+      <p><strong>Indian college students and freshers who want to become job-ready for data, AI, full-stack, or product-development roles.</strong></p>
+    </div>
+
+    <h3 class="sub">Why this is the right wedge</h3>
+    <ul class="check-list yes">
+      <li>You understand the user personally as an IIT Madras data-science student.</li>
+      <li>You already have a live SkillBridge foundation using Next.js, Supabase, TypeScript, and Gemini.</li>
+      <li>Your hackathon / IIT network gives you a low-cost first distribution channel.</li>
+      <li>The target user has a clear measurable outcome: portfolio, internship, freelance gig, interview readiness, or first income.</li>
+    </ul>
+
+    <div class="callout warn">
+      <p><strong>Do not begin with:</strong> school education, all career fields, all mentors, or all professional services. Win one urgent use case first — <strong>"help technical students build a credible AI/full-stack portfolio in 30 days."</strong></p>
+    </div>
+  </section>
+
+  <!-- 2. BUSINESS MODEL VISUAL -->
+  <section id="model-visual">
+    <div class="sec-head">
+      <span class="eyebrow">02</span>
+      <h2>Business model visual</h2>
+      <p class="lede">The full loop: a student's goal enters the AI diagnostic, moves through a sprint and coaching, escalates to a human expert only when needed, and ends in verified proof that converts into real opportunity — and revenue.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart LR
+    U[Student / fresher\nCareer goal or skill gap] --> AI[AI Career Diagnostic]
+    AI --> P[Personalized 30-day\nExecution Sprint]
+    P --> L[Practical learning\nMicro-lessons • tasks • projects]
+    L --> AC[AI Coach\nDaily feedback • debugging\naccountability]
+    AC --> H{Needs expert help?}
+
+    H -- Yes --> M[Verified human mentor /\nprofessional expert]
+    M --> S[1:1 session, review,\nor deliverable support]
+    H -- No --> O[Portfolio artifact /\nverified project outcome]
+
+    S --> O
+    O --> V[Skill profile + proof\nPortfolio • certificate • shareable results]
+    V --> J[Internship, freelance,\njob or client opportunity]
+    J --> U
+
+    U --> R[Revenue\nSubscription • session fee\ncommission • B2B licenses]
+    R --> M[Expert payout]
+    R --> PL[Platform revenue]
+    </div></div>
+
+    <h3 class="sub">What each user receives</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Layer</th><th>User problem</th><th>Your product response</th><th>Revenue opportunity</th></tr></thead>
+        <tbody>
+          <tr><td>Diagnose</td><td>"I don't know what to learn first."</td><td>AI assesses current skills, goals, time, resume, GitHub, and portfolio</td><td>Free lead magnet</td></tr>
+          <tr><td>Learn by doing</td><td>"Courses don't become real skills."</td><td>Short execution sprints with a required working artifact</td><td>Freemium or subscription</td></tr>
+          <tr><td>AI coaching</td><td>"I'm stuck and lose consistency."</td><td>Daily planner, code/debug help, project feedback, reminders</td><td>Subscription</td></tr>
+          <tr><td>Expert access</td><td>"I need a real person for high-stakes feedback."</td><td>Book a vetted mentor for a focused session or project review</td><td>Per-session take rate</td></tr>
+          <tr><td>Proof of ability</td><td>"How do I show I can do it?"</td><td>Portfolio page, project verification, skill evidence, peer/mentor review</td><td>Paid verification or bundle</td></tr>
+          <tr><td>Opportunity access</td><td>"Where do I get real work?"</td><td>Internship challenges, freelance micro-projects, employer briefs</td><td>Employer fee or success commission</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. THREE MODELS -->
+  <section id="three-models">
+    <div class="sec-head">
+      <span class="eyebrow">03</span>
+      <h2>How the three models combine</h2>
+      <p class="lede">Astrotalk's model centers on paid human-expert interactions, Coursera combines consumer credentials with enterprise access, and Udemy combines an instructor marketplace with a large recurring enterprise business. Borrow the mechanisms — not the exact products.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart TB
+    A[Astrotalk principle] --> A1[Match a user with a trusted\nhuman expert at a high-intent moment]
+    A1 --> A2[Charge per interaction\nand pay expert share]
+
+    C[Coursera principle] --> C1[Structured pathways\nand outcome proof]
+    C1 --> C2[Subscription / certificate /\ninstitutional revenue]
+
+    Ud[Udemy principle] --> U1[Fast practical content\nfrom domain practitioners]
+    U1 --> U2[Marketplace supply and\nlearner discovery]
+
+    A2 --> S[SkillBridge Pro]
+    C2 --> S
+    U2 --> S
+
+    S --> X[AI-led execution pathway\n+ human escalation\n+ verified portfolio outcome]
+    </div></div>
+
+    <h3 class="sub">Company insight → your adaptation</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Company insight</th><th>Your adaptation</th></tr></thead>
+        <tbody>
+          <tr><td>Astrotalk: users pay when they urgently need personalized help</td><td>Trigger expert support only when the learner is blocked, preparing for an interview, reviewing a resume, or shipping a project</td></tr>
+          <tr><td>Coursera: users value structured progression and credible proof</td><td>Give every sprint a clear outcome, rubric, completion proof, and portfolio artifact</td></tr>
+          <tr><td>Udemy: practical content supply can scale quickly</td><td>Let strong builders create reusable "project blueprints," but curate heavily in the beginning</td></tr>
+          <tr><td>All three: trust, discovery, payment, quality, and retention are core systems</td><td>Build these systems before trying to scale content or mentor supply</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. USER JOURNEY -->
+  <section id="journey">
+    <div class="sec-head">
+      <span class="eyebrow">04</span>
+      <h2>User journey</h2>
+      <p class="lede">From landing page to a verified portfolio card and a paid upgrade — the path a real learner walks through the product.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart TD
+    A[Landing page:\nChoose a career goal] --> B[5-minute AI diagnostic]
+    B --> C[Free result:\nSkill-gap map + 7-day starter plan]
+    C --> D[Start free challenge:\nBuild one portfolio artifact]
+    D --> E{Progressing?}
+
+    E -- Yes --> F[AI coach gives feedback,\ntasks and next project]
+    E -- Stuck / high stakes --> G[Book verified expert\n15–30 min focused review]
+
+    F --> H[Project submitted]
+    G --> H
+    H --> I[Automated + human rubric review]
+    I --> J[Verified portfolio card,\nGitHub proof, shareable profile]
+    J --> K[Upgrade to Pro /\nnext career sprint]
+    K --> L[Referral, peer group,\nnew user acquisition]
+    </div></div>
+
+    <div class="example-card">
+      <span class="who">Example — first paying user</span>
+      <p style="margin:0 0 10px;color:var(--text-secondary);"><strong style="color:var(--text);">Aman</strong>, second-year BTech student, wants an AI internship but has no projects.</p>
+      <ol>
+        <li>He completes the free "AI Internship Readiness Scan."</li>
+        <li>SkillBridge identifies weak GitHub evidence and missing end-to-end projects.</li>
+        <li>He gets a free 7-day sprint: build and deploy a document-Q&amp;A app.</li>
+        <li>He upgrades for ₹299–₹499/month to receive daily AI guidance, code reviews, and a portfolio pathway.</li>
+        <li>When preparing to apply, he books a ₹299–₹599 expert resume/GitHub review.</li>
+        <li>He earns a verified project card and applies through curated opportunity challenges.</li>
+      </ol>
+      <p style="margin-top:12px;">The platform makes money without needing to promise employment. You sell <strong>job-readiness execution and evidence</strong>, not a guaranteed job.</p>
+    </div>
+  </section>
+
+  <!-- 5. REVENUE -->
+  <section id="revenue">
+    <div class="sec-head">
+      <span class="eyebrow">05</span>
+      <h2>Revenue model</h2>
+      <p class="lede">Consumer subscription and per-session take rate first, then institutional and employer revenue once traction is proven.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart LR
+    F[Free diagnostic +\n7-day challenge] --> P[Pro subscription\n₹299–₹499/month]
+    P --> E[Expert review booking\n₹299–₹999/session]
+    E --> T[Platform keeps\n20–30% take rate]
+    P --> V[Optional verified\nportfolio review]
+    V --> R[One-time revenue]
+
+    B[Colleges, bootcamps,\nstudent communities] --> L[B2B cohort license]
+    L --> BR[Recurring institutional revenue]
+
+    Co[Startups / SMEs] --> O[Paid talent challenges,\nproject briefs or hiring access]
+    O --> OR[Employer revenue]
+    </div></div>
+
+    <h3 class="sub">Monetization sequence</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Phase</th><th>Offer</th><th>Suggested price</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Free</td><td>AI diagnostic, one career map, one 7-day challenge</td><td class="num">₹0</td><td>Acquire users and prove activation</td></tr>
+          <tr><td>First revenue</td><td>Pro execution membership</td><td class="num">₹299–₹499/mo</td><td>Validate willingness to pay</td></tr>
+          <tr><td>High-intent revenue</td><td>Expert project, resume, mock-interview, or GitHub review</td><td class="num">₹299–₹999/session</td><td>Monetize urgent personal support</td></tr>
+          <tr><td>Outcome proof</td><td>Verified portfolio/project review</td><td class="num">₹199–₹499/review</td><td>Monetize credibility layer</td></tr>
+          <tr><td>Cohort revenue</td><td>College club, campus, or bootcamp plan</td><td class="num">₹5,000–₹25,000/mo</td><td>Reduce dependence on individual sales</td></tr>
+          <tr><td>Employer revenue</td><td>Sponsored challenge, project brief, candidate access</td><td class="num">₹10,000+/challenge</td><td>Monetize demand side later</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Unit-economics example <span style="color:var(--text-muted);font-weight:400;font-size:.85rem;">(illustrative target, not a forecast)</span></h3>
+    <pre class="econ">100 activated free users
+├── 12 upgrade to Pro at ₹399/month             = <span class="figure">₹4,788 MRR</span>
+├── 8 buy one expert review at ₹499              = ₹3,992 GMV
+│   └── Platform retains 25%                     = <span class="figure">₹998 revenue</span>
+└── 5 buy portfolio verification at ₹299         = <span class="figure">₹1,495 revenue</span>
+
+Estimated first-month platform revenue           = <span class="total">₹7,281</span></pre>
+    <p>At this stage, the goal is not massive revenue. The goal is proof that users complete projects, return weekly, and pay for a specific valuable outcome.</p>
+  </section>
+
+  <!-- 6. SYSTEMS -->
+  <section id="systems">
+    <div class="sec-head">
+      <span class="eyebrow">06</span>
+      <h2>Running systems</h2>
+      <p class="lede">Five subsystems power the product: user experience, intelligence (AI), marketplace, learning proof, and operations.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart TB
+    subgraph User_Experience
+        WEB[Next.js web app]
+        MOB[Mobile-first PWA]
+        DASH[Goal, sprint, portfolio dashboard]
+    end
+
+    subgraph Intelligence
+        DIAG[Gemini career diagnostic]
+        PLAN[AI sprint planner]
+        COACH[AI coach: task feedback,\nRAG, debugging, accountability]
+        MATCH[Expert matching and routing]
+    end
+
+    subgraph Marketplace
+        EXP[Expert onboarding,\nverification, profile, availability]
+        BOOK[Booking, calendar,\nvideo/session workflow]
+        PAY[Payments, wallet/ledger,\nrefunds and payouts]
+    end
+
+    subgraph Learning_Proof
+        TASK[Projects, rubrics,\nsubmissions]
+        GIT[GitHub / deployment evidence]
+        VERIFY[Automated checks +\nhuman review]
+        PORT[Public portfolio profile]
+    end
+
+    subgraph Operations
+        DB[Supabase: Auth,\nPostgres, Storage, RLS]
+        ANALYTICS[Activation, completion,\nconversion, retention]
+        CRM[Email, WhatsApp,\npush notifications]
+        TRUST[Moderation, disputes,\nprivacy, support]
+    end
+
+    WEB --> DIAG --> PLAN --> COACH
+    DASH --> TASK --> VERIFY --> PORT
+    COACH --> MATCH --> BOOK --> PAY
+    EXP --> MATCH
+    DB --> ANALYTICS
+    ANALYTICS --> CRM
+    TRUST --> EXP
+    </div></div>
+
+    <h3 class="sub">Recommended stack</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>System</th><th>Recommended implementation</th></tr></thead>
+        <tbody>
+          <tr><td>Web application</td><td>Next.js, TypeScript, Tailwind, deployed on Vercel</td></tr>
+          <tr><td>Authentication / data</td><td>Supabase Auth, Postgres, Storage, Row-Level Security</td></tr>
+          <tr><td>AI layer</td><td>Gemini API with structured JSON outputs, tool/function calling, prompt/version logging</td></tr>
+          <tr><td>Background workflows</td><td>Supabase Edge Functions + cron jobs; Cloud Run later if workload grows</td></tr>
+          <tr><td>Retrieval</td><td>pgvector in Supabase for curated guides, project resources, and expert knowledge</td></tr>
+          <tr><td>Payments</td><td>Razorpay for India initially; Stripe only if international payments become relevant</td></tr>
+          <tr><td>Video / scheduling</td><td>Google Calendar integration + Google Meet link; video SDK only after volume justifies it</td></tr>
+          <tr><td>Analytics</td><td>PostHog or a simple Supabase event table initially</td></tr>
+          <tr><td>Messaging</td><td>Email first; add WhatsApp only after consent and retention proof</td></tr>
+          <tr><td>Portfolio validation</td><td>GitHub OAuth, deployed-project URL checks, submission rubric, reviewer dashboard</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Because SkillBridge's backend infrastructure already exists, don't rebuild identity, profiles, basic AI chat, or core learning flows. Focus new development on the diagnostic, sprint engine, evidence/portfolio layer, expert marketplace, payments, and measurable analytics.</p>
+  </section>
+
+  <!-- 7. MVP SCOPE -->
+  <section id="mvp">
+    <div class="sec-head">
+      <span class="eyebrow">07</span>
+      <h2>MVP scope</h2>
+      <p class="lede">Version 1 is one straight line from goal onboarding to a paid expert review — nothing wider.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart LR
+    A[Goal onboarding] --> B[AI diagnostic]
+    B --> C[30-day sprint generator]
+    C --> D[Daily task dashboard]
+    D --> E[AI feedback and help]
+    E --> F[Project submission]
+    F --> G[Public portfolio card]
+    G --> H[Expert review booking]
+    H --> I[Payment and rating]
+    </div></div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub">Must-have features</h3>
+        <ul class="check-list yes">
+          <li>Goal selection: "AI internship," "full-stack portfolio," "data analyst readiness," or "freelance web developer"</li>
+          <li>AI diagnostic based on skills, time availability, experience, resume/GitHub links, and intended outcome</li>
+          <li>One focused 30-day execution sprint per goal</li>
+          <li>Daily tasks, streaks, milestone deadlines, and AI feedback</li>
+          <li>Project templates with a clear rubric and deployment/GitHub submission</li>
+          <li>Public portfolio profile with verified project cards</li>
+          <li>Expert profile, availability, booking, payment, feedback, and payout tracking</li>
+          <li>Admin dashboard for mentor approval, disputes, project reviews, revenue, and user metrics</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="sub">Explicitly postpone</h3>
+        <ul class="check-list no">
+          <li>Native Android / iOS apps</li>
+          <li>Live group classes</li>
+          <li>Full creator course-upload marketplace</li>
+          <li>Large community forum</li>
+          <li>Job guarantee</li>
+          <li>AI-generated certificates without rigorous evidence</li>
+          <li>Hundreds of mentors or many categories</li>
+          <li>Complex recommender models</li>
+        </ul>
+      </div>
+    </div>
+    <p>A broad e-learning product typically requires planning, MVP validation, testing, and iterative improvement — keep the first version narrowly outcome-focused rather than attempting the full feature set of a mature marketplace.</p>
+  </section>
+
+  <!-- 8. GROWTH LOOP -->
+  <section id="growth">
+    <div class="sec-head">
+      <span class="eyebrow">08</span>
+      <h2>Growth loop</h2>
+      <p class="lede">Every finished project is a public artifact. Every public artifact is a distribution channel.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart LR
+    A[Free diagnostic and\ncareer-gap report] --> B[Student starts sprint]
+    B --> C[Builds visible portfolio artifact]
+    C --> D[Shares result on LinkedIn,\nGitHub, campus group]
+    D --> E[New student sign-ups]
+    E --> F[More learner data]
+    F --> G[Better AI plans,\nmatching and projects]
+    G --> B
+
+    B --> H[Paid Pro / expert review]
+    H --> I[Revenue]
+    I --> J[Recruit better experts,\nimprove verification]
+    J --> G
+    </div></div>
+
+    <h3 class="sub">Low-cost acquisition channels</h3>
+    <ul class="check-list yes">
+      <li>IIT, NPTEL, hackathon, campus-ambassador, and developer-community networks</li>
+      <li>LinkedIn posts showing real project transformations, not generic "learn AI" content</li>
+      <li>Open-source project templates with an embedded SkillBridge portfolio-validation CTA</li>
+      <li>Student referral rewards: free expert-review credit, not cash initially</li>
+      <li>College clubs and coding societies: run a "Build and Deploy in 7 Days" event</li>
+      <li>Free career diagnostic as the lead magnet</li>
+    </ul>
+  </section>
+
+  <!-- 9. METRICS -->
+  <section id="metrics">
+    <div class="sec-head">
+      <span class="eyebrow">09</span>
+      <h2>Metrics that decide survival</h2>
+      <p class="lede">The funnel to watch from acquisition through retention, with the initial bar for each stage.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Funnel stage</th><th>Metric</th><th>Initial target</th></tr></thead>
+        <tbody>
+          <tr><td>Acquisition</td><td>Landing page → diagnostic completion</td><td class="num">25%+</td></tr>
+          <tr><td>Activation</td><td>Diagnostic → first task within 24 hours</td><td class="num">60%+</td></tr>
+          <tr><td>Engagement</td><td>Weekly active learners</td><td class="num">40%+ of activated</td></tr>
+          <tr><td>Outcome</td><td>Learners who finish one deployable artifact</td><td class="num">30%+</td></tr>
+          <tr><td>Monetization</td><td>Activated users who pay within 30 days</td><td class="num">8–15%</td></tr>
+          <tr><td>Expert marketplace</td><td>Booked sessions with a positive rating</td><td class="num">85%+</td></tr>
+          <tr><td>Retention</td><td>Paid users active in month 2</td><td class="num">50%+</td></tr>
+          <tr><td>Quality</td><td>Mentor response / session no-show rate</td><td class="num">Under 5%</td></tr>
+          <tr><td>Unit economics</td><td>Revenue per paid learner vs. support + mentor acquisition cost</td><td class="num">Positive before ads</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 10. TRUST -->
+  <section id="trust">
+    <div class="sec-head">
+      <span class="eyebrow">10</span>
+      <h2>Trust, quality, and safety</h2>
+      <p class="lede">Expert quality is enforced as a loop, not a one-time approval.</p>
+    </div>
+    <div class="diagram"><div class="mermaid">
+flowchart LR
+    A[Expert application] --> B[Identity + LinkedIn /\nGitHub verification]
+    B --> C[Interview and trial review]
+    C --> D[Approved expert profile]
+    D --> E[Session logs, ratings,\ncomplaints and quality score]
+    E --> F{Quality threshold met?}
+    F -- Yes --> D
+    F -- No --> G[Coaching, pause or removal]
+    </div></div>
+
+    <h3 class="sub">Strict boundaries</h3>
+    <ul class="check-list yes">
+      <li>Do not claim the service guarantees employment, admission, income, or freelance work</li>
+      <li>Show what is AI-generated, what is mentor-reviewed, and what is verified from external evidence</li>
+      <li>Obtain consent before displaying GitHub, portfolio, resume, or session data publicly</li>
+      <li>Do not let mentors give legal, medical, financial, or mental-health advice unless properly qualified and the category is designed for it</li>
+      <li>Start with well-defined professional support: project reviews, technical mentoring, resume feedback, interview practice, portfolio evaluation</li>
+    </ul>
+  </section>
+
+  <!-- 11. LAUNCH OFFER -->
+  <section id="launch">
+    <div class="sec-head">
+      <span class="eyebrow">11</span>
+      <h2>Your first launch offer</h2>
+      <p class="lede">"AI Portfolio Sprint: Build, Deploy, and Get Reviewed in 30 Days"</p>
+    </div>
+
+    <p><strong style="color:var(--text);">Target:</strong> Indian technical students/freshers who have learned the basics but lack a strong proof-of-work portfolio.</p>
+
+    <h3 class="sub">Includes</h3>
+    <ul class="check-list yes">
+      <li>AI career diagnostic</li>
+      <li>Personalized 30-day roadmap</li>
+      <li>One end-to-end deployed AI/full-stack project</li>
+      <li>Daily AI guidance and debugging support</li>
+      <li>GitHub / readme / deployment checklist</li>
+      <li>One expert project or resume review</li>
+      <li>Verified public portfolio card</li>
+      <li>Demo-day / community showcase</li>
+    </ul>
+
+    <div class="callout good">
+      <p><strong>Founding price:</strong> ₹399–₹799 for the first cohort, depending on how much human review is included. Narrow enough to sell, build, and measure — after 20–30 successful completions, expand into data analytics, UI/UX, product management, freelancing, and other professional-service pathways.</p>
+    </div>
+
+    <p style="margin-top:24px;">Your real moat will not be Gemini prompts or course videos. It will be the <strong style="color:var(--text);">outcome graph</strong> — data showing which learner profile, daily actions, expert interventions, and project types reliably lead to a finished portfolio and career progress.</p>
+  </section>
+
+</main>
+
+<button id="top-btn" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer>
+  <div class="wrap">
+    <p>SkillBridge Pro — internal plan &amp; workflow reference. Open this file in any browser to view or present; no server required.</p>
+  </div>
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      darkMode: true,
+      background: 'transparent',
+      primaryColor: '#1C2230',
+      primaryTextColor: '#E8EBF0',
+      primaryBorderColor: '#3A4454',
+      lineColor: '#6B7686',
+      secondaryColor: '#1C2230',
+      tertiaryColor: '#1C2230',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '14.5px',
+      edgeLabelBackground: '#0C0F14',
+      clusterBkg: '#12161D',
+      clusterBorder: '#262E3C'
+    },
+    flowchart: { curve: 'basis', htmlLabels: true, padding: 12 }
+  });
+
+  // Nav active state on scroll
+  const sections = document.querySelectorAll('main section[id]');
+  const navLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const setActive = () => {
+    let current = sections[0]?.id;
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= y) current = sec.id; });
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  };
+  document.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+
+  // Back to top button
+  const topBtn = document.getElementById('top-btn');
+  document.addEventListener('scroll', () => {
+    topBtn.classList.toggle('show', window.scrollY > 600);
+  }, { passive: true });
+</script>
+
+</body>
+</html>
