@@ -21,12 +21,29 @@ export default {
           indigo: '#7C8CF0',
           coral: '#E2705C',
           violet: '#8b5cf6',
+        },
+        classic: {
+          primary: '#1A365D',
+          primaryLight: '#2B6CB0',
+          accent: '#3182CE',
+          success: '#38A169',
+          warning: '#D69E2E',
+          bg: '#F7FAFC',
+          card: '#FFFFFF',
+          textPrimary: '#1A202C',
+          textSecondary: '#4A5568',
+          border: '#E2E8F0',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         heading: ['"Space Grotesk"', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'monospace'],
+      },
+      boxShadow: {
+        'classic-card': '0 4px 12px rgba(0,0,0,0.06)',
+        'classic-btn': '0 2px 8px rgba(0,0,0,0.08)',
+        'classic-modal': '0 20px 60px rgba(0,0,0,0.15)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

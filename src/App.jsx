@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Lenis from 'lenis';
+import { useLenis } from 'lenis/react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import DiagnosticModal from './components/DiagnosticModal';
@@ -27,8 +27,7 @@ export default function App() {
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [user, setUser] = useState(INITIAL_USER);
-  const [lenisInstance, setLenisInstance] = useState(null);
-
+  const lenis = useLenis();
   const { 
     isSlowConnection, 
     simulatedSlow, 
@@ -36,36 +35,13 @@ export default function App() {
     triggerSimulatedLoad 
   } = useNetworkStatus();
 
-  // Initialize Lenis Smooth Scroll
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      wheelMultiplier: 1.0,
-      touchMultiplier: 1.5,
-    });
-
-    setLenisInstance(lenis);
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
 
   // Handle smooth page switching with skeleton transition if network is slow
   const handlePageChange = (newPage) => {
     triggerSimulatedLoad(isSlowConnection ? 1200 : 300);
     setActivePage(newPage);
-    if (lenisInstance) {
-      lenisInstance.scrollTo(0, { immediate: true });
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
     }
   };
 
@@ -89,14 +65,16 @@ export default function App() {
     <div className="min-h-screen bg-bright-bg text-slate-100 font-sans selection:bg-brand-cyan selection:text-black">
       
       {/* Global Top Header Navbar */}
-      <Navbar
-        activePage={activePage}
-        setActivePage={handlePageChange}
-        openDiagnostic={() => setIsDiagnosticOpen(true)}
-        user={user}
-        simulatedSlow={simulatedSlow}
-        setSimulatedSlow={setSimulatedSlow}
-      />
+      {!isLanding && (
+        <Navbar
+          activePage={activePage}
+          setActivePage={handlePageChange}
+          openDiagnostic={() => setIsDiagnosticOpen(true)}
+          user={user}
+          simulatedSlow={simulatedSlow}
+          setSimulatedSlow={setSimulatedSlow}
+        />
+      )}
 
       <div className="flex">
         
@@ -134,7 +112,6 @@ export default function App() {
                 <LandingPage
                   setActivePage={handlePageChange}
                   openDiagnostic={() => setIsDiagnosticOpen(true)}
-                  lenis={lenisInstance}
                 />
               )}
 
@@ -186,7 +163,7 @@ export default function App() {
         </main>
       </div>
       
-      <Footer setActivePage={setActivePage} />
+      {!isLanding && <Footer setActivePage={setActivePage} />}
 
       {/* Global Interactive Modals */}
       <DiagnosticModal
