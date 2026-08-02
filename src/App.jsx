@@ -15,6 +15,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
 import AuthPage from './pages/AuthPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
@@ -175,6 +176,10 @@ export default function App() {
 
               {activePage === '/settings' && (
                 <SettingsPage user={user} setUser={setUser} />
+              )}
+
+              {activePage === '/admin' && (
+                <AdminDashboard />
               )}
             </>
           )}

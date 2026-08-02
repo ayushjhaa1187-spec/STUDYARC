@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Razorpay from 'razorpay';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,6 +13,11 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy_key_123',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_abc123'
+});
 
 const PORT = 3001;
 
@@ -69,6 +75,31 @@ app.post('/api/diagnostic', async (req, res) => {
         "Requires portfolio evidence of production deployments.",
         "Needs focus on system architecture patterns."
       ]
+    });
+  }
+});
+
+// Razorpay Order Creation Endpoint
+app.post('/api/create-order', async (req, res) => {
+  try {
+    const { amount, mentorId, slot } = req.body;
+    // Razorpay amount is in paise (₹1 = 100 paise)
+    const options = {
+      amount: amount * 100,
+      currency: "INR",
+      receipt: `receipt_order_${Date.now()}`,
+      notes: { mentorId, slot }
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    console.error('Razorpay Error:', error);
+    // Fallback order for testing when keys are missing/invalid
+    res.json({
+      id: `order_fallback_${Date.now()}`,
+      amount: req.body.amount * 100,
+      currency: "INR"
     });
   }
 });

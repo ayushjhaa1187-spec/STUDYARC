@@ -122,3 +122,22 @@ ALTER TABLE public.sprint_progress ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own chat history" ON public.chat_history FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own artifact submissions" ON public.artifact_submissions FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own sprint progress" ON public.sprint_progress FOR ALL USING (auth.uid() = user_id);
+
+-- PHASE 4: EXPERT MARKETPLACE --
+
+-- 8. Expert Bookings
+CREATE TABLE public.expert_bookings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    expert_id UUID NOT NULL, -- references a mentor/expert record
+    slot_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    amount_paid NUMERIC(10, 2) NOT NULL,
+    payment_order_id TEXT,
+    payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed')),
+    status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.expert_bookings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own bookings" ON public.expert_bookings FOR INSERT WITH CHECK (auth.uid() = user_id);

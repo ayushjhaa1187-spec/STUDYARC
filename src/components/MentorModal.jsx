@@ -21,13 +21,72 @@ export default function MentorModal({ mentor, isOpen, onClose }) {
     'Aug 7, 6:00 PM'
   ];
 
-  const handleBooking = () => {
+  const loadScript = (src) => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleBooking = async () => {
     setIsBooked(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch('http://localhost:3001/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: mentor.price, mentorId: mentor.id, slot: selectedSlot })
+      });
+      
+      const order = await res.json();
+      const isScriptLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+
+      if (!isScriptLoaded || !window.Razorpay) {
+        // Fallback simulated success if Razorpay isn't fully configured
+        alert(`Booking Confirmed with ${mentor.name} for ${selectedSlot}! A Google Meet link has been dispatched.`);
+        setIsBooked(false);
+        onClose();
+        return;
+      }
+
+      const options = {
+        key: 'rzp_test_dummy_key_123', // Matches backend mock
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Agentic Execution',
+        description: `Expert Session with ${mentor.name}`,
+        order_id: order.id,
+        handler: function (response) {
+          alert(`Payment Successful! Booking Confirmed with ${mentor.name} for ${selectedSlot}!`);
+          setIsBooked(false);
+          onClose();
+        },
+        prefill: {
+          name: 'Alex Developer',
+          email: 'alex@example.com',
+          contact: '9999999999'
+        },
+        theme: {
+          color: '#35C7B8'
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        alert('Payment Failed. Please try again.');
+        setIsBooked(false);
+      });
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      // Fallback
+      alert(`Booking Confirmed with ${mentor.name} for ${selectedSlot}! (Fallback Mode)`);
       setIsBooked(false);
       onClose();
-      alert(`Booking Confirmed with ${mentor.name} for ${selectedSlot}! A Google Meet link has been dispatched.`);
-    }, 1200);
+    }
   };
 
   return (

@@ -24,6 +24,7 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
     { id: '/portfolio', label: 'Portfolio', icon: Briefcase },
     { id: '/community', label: 'Community', icon: MessageSquareCode },
     { id: '/settings', label: 'Settings', icon: Settings },
+    { id: '/admin', label: 'Admin Panel', icon: ShieldCheck },
     { id: '/login', label: 'Sign In / Account', icon: LogIn },
   ];
 
