@@ -1,232 +1,198 @@
-import React, { useState } from 'react';
-import { 
-  Briefcase, 
-  ExternalLink, 
-  Code2, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Share2, 
-  FileText, 
-  Copy, 
-  Clock, 
-  Sparkles,
-  Award
-} from 'lucide-react';
-import { PORTFOLIO_PROJECTS } from '../data/mockData';
+import React from 'react';
+import { ExternalLink, Code, Shield, CheckCircle2, ChevronRight, BookOpen, Map } from 'lucide-react';
+import { PORTFOLIO_PROJECTS, COURSES, JOURNEYS } from '../data/mockData';
 
-export default function PortfolioPage() {
-  const [copied, setCopied] = useState(false);
-  const [projects] = useState(PORTFOLIO_PROJECTS);
-
-  const featured = projects.find(p => p.isFeatured) || projects[0];
-
-  const handleCopyLink = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+const PortfolioPage = ({ user, setActivePage }) => {
+  const featured = PORTFOLIO_PROJECTS[0];
+  const others = PORTFOLIO_PROJECTS.slice(1);
 
   return (
-    <div className="space-y-12 pb-16">
-      
-      {/* Header + Sharing Bar */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center space-x-2 text-xs font-mono text-brand-teal uppercase font-bold tracking-widest">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Cryptographic Proof Engine</span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-black text-white mt-2 tracking-tight">Your Verified Portfolio</h1>
-          <p className="text-sm text-slate-300 mt-3 max-w-2xl leading-relaxed">
-            Proof-based portfolio verified by Gemini automated audits and Senior Tech Lead code roasts. This is your undeniable proof of work.
-          </p>
-        </div>
-
-        {/* Sharing Action Bar */}
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center space-x-2 rounded-xl border border-bright-border bg-bright-bg px-4 py-2.5 text-xs font-bold text-slate-300 hover:border-brand-teal/40 hover:text-white transition-colors"
-          >
-            <Copy className="h-4 w-4 text-brand-cyan" />
-            <span>{copied ? 'Link Copied!' : 'Copy Link'}</span>
-          </button>
+    <div className="min-h-screen bg-[#0C0F14] text-gray-200 pb-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        
+        {/* Profile Header */}
+        <div className="glass-bright rounded-2xl p-8 border border-[#262e3c] mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-teal/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
           
-          <button
-            onClick={() => alert('Generating cryptographic PDF certificate...')}
-            className="flex items-center space-x-2 rounded-xl border border-brand-amber/30 bg-brand-amber/10 px-4 py-2.5 text-xs font-bold text-brand-amber hover:bg-brand-amber/20 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-          >
-            <FileText className="h-4 w-4" />
-            <span>Export PDF</span>
-          </button>
-
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center space-x-2 rounded-xl bg-bright-gradient border border-brand-teal px-5 py-2.5 text-xs font-extrabold text-white hover:scale-105 shadow-lg shadow-brand-teal/20 glow-bright-cyan transition-transform"
-          >
-            <Share2 className="h-4 w-4" />
-            <span>Share on LinkedIn</span>
-          </a>
-        </div>
-      </div>
-
-      {/* FEATURED PROJECT SECTION */}
-      <div className="relative overflow-hidden rounded-3xl glass-bright card-glow-teal p-8 md:p-10 border-2 border-brand-teal/40 shadow-[0_0_30px_rgba(6,214,160,0.15)]">
-        {/* Animated Glow Orb */}
-        <div className="absolute -top-24 -right-24 h-64 w-64 bg-brand-teal/20 blur-[80px] rounded-full animate-pulse-slow"></div>
-
-        <div className="relative z-10 space-y-8">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-teal/20 pb-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-lg bg-brand-teal px-4 py-1.5 text-xs font-mono font-black text-[#0B0E14] uppercase tracking-widest shadow-[0_0_15px_rgba(6,214,160,0.4)]">
-                Featured Verified Proof
-              </span>
-              <span className="flex items-center space-x-1.5 text-xs text-brand-cyan font-mono font-bold bg-brand-cyan/10 px-3 py-1.5 rounded-lg border border-brand-cyan/30">
-                <ShieldCheck className="h-4 w-4" />
-                <span>{featured.verificationBadge}</span>
-              </span>
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10">
+            <img 
+              src="https://i.pravatar.cc/150?u=alex" 
+              alt="Alex Rivera" 
+              className="w-24 h-24 rounded-full ring-2 ring-brand-teal object-cover"
+            />
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-3xl font-bold text-white mb-1">Alex Rivera</h1>
+              <p className="text-brand-teal text-sm font-medium mb-3">AI & Full-Stack Engineer</p>
+              
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-400 mb-4">
+                <span className="flex items-center gap-1.5"><Code size={16}/> 4 Projects</span>
+                <span className="flex items-center gap-1.5"><Shield size={16} className="text-emerald-500"/> 3 Verified</span>
+                <span className="flex items-center gap-1.5">128 Hours</span>
+              </div>
+              
+              <div className="inline-block bg-gray-800/80 px-3 py-1.5 rounded text-xs text-gray-300 border border-gray-700">
+                Targeting: Staff AI Engineer
+              </div>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <a
-                href={featured.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center space-x-1.5 text-xs font-bold text-slate-300 hover:text-white font-mono bg-bright-bg px-4 py-2 rounded-xl border border-bright-border transition-colors"
-              >
-                <Code2 className="h-4 w-4" />
-                <span>GitHub</span>
-              </a>
-              <a
-                href={featured.liveDemoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center space-x-1.5 text-xs font-bold text-brand-teal hover:bg-brand-teal/20 font-mono bg-brand-teal/10 px-4 py-2 rounded-xl border border-brand-teal/30 transition-colors"
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span>Live Demo</span>
-              </a>
+            
+            <div className="flex flex-col items-center md:items-end gap-3">
+              <button className="px-4 py-2 border border-gray-600 rounded-lg text-sm font-medium text-white hover:bg-gray-800 transition-colors">
+                Edit Portfolio
+              </button>
+              <div className="flex gap-3 text-gray-400">
+                <a href="#" className="hover:text-white transition-colors" aria-label="GitHub"><ExternalLink size={20} /></a>
+                <a href="#" className="hover:text-white transition-colors"><ExternalLink size={20} /></a>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div>
-            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">{featured.title}</h2>
-            <p className="mt-4 text-sm md:text-base text-slate-300 max-w-3xl leading-relaxed font-medium">
+        {/* Featured Project */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold text-white mb-4">Featured Work</h2>
+          <div className="glass-bright rounded-2xl p-6 md:p-8 border border-[#262e3c] card-glow-cyan">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-xs font-bold tracking-wider text-brand-cyan uppercase mb-2 block">Featured Project</span>
+                <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                  {featured.title}
+                  <span className="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1 uppercase tracking-wider font-bold">
+                    <Shield size={10} /> Verified
+                  </span>
+                </h3>
+              </div>
+            </div>
+            
+            <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6 max-w-3xl">
               {featured.description}
             </p>
-          </div>
-
-          {/* Tech Stack Pills */}
-          <div className="flex flex-wrap gap-2.5">
-            {featured.techStack.map((tech) => (
-              <span key={tech} className="rounded-lg bg-bright-bg px-3.5 py-1.5 text-xs font-mono font-bold text-brand-teal border border-bright-border hover:border-brand-teal/40 transition-colors cursor-default">
-                {tech}
-              </span>
-            ))}
-          </div>
-
-          {/* Mentor Review Summary */}
-          <div className="rounded-2xl border border-brand-cyan/30 bg-brand-cyan/5 p-6 relative overflow-hidden group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-cyan group-hover:shadow-[0_0_10px_rgba(6,214,160,0.8)] transition-shadow"></div>
-            <div className="flex items-center space-x-2 text-xs text-brand-cyan font-mono font-black uppercase tracking-widest mb-3">
-              <Award className="h-5 w-5" />
-              <span>Expert Mentor Review Audit</span>
+            
+            <div className="flex flex-wrap gap-2 mb-8">
+              {featured.techStack.map(tech => (
+                <span key={tech} className="bg-[#161b22] border border-gray-700 px-3 py-1 rounded-full text-xs text-gray-300">
+                  {tech}
+                </span>
+              ))}
             </div>
-            <p className="text-sm text-slate-200 leading-relaxed font-medium italic">
-              "{featured.mentorReviewSummary}"
-            </p>
+            
+            {/* Review Quote */}
+            <blockquote className="border-l-2 border-brand-amber pl-4 mb-8 bg-gray-800/30 p-4 rounded-r-lg">
+              <p className="text-sm italic text-gray-300 mb-2">"Excellent implementation of vector search. The architecture choices here show a deep understanding of scaling AI features in production."</p>
+              <footer className="text-xs text-brand-amber font-medium">— Sarah Jenkins, Staff Engineer @ Anthropic (Expert Reviewer)</footer>
+            </blockquote>
+            
+            {/* Verification Timeline */}
+            <div className="mb-8 overflow-x-auto pb-2">
+              <div className="flex items-center min-w-[500px]">
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-6 h-6 rounded-full bg-brand-teal text-[#0C0F14] flex items-center justify-center mb-2 z-10"><CheckCircle2 size={14}/></div>
+                  <span className="text-[10px] text-gray-400">Submitted</span>
+                  <span className="text-[10px] text-gray-500">Oct 12</span>
+                </div>
+                <div className="h-[2px] bg-brand-teal flex-1 -mx-8 -mt-6"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-6 h-6 rounded-full bg-brand-teal text-[#0C0F14] flex items-center justify-center mb-2 z-10"><CheckCircle2 size={14}/></div>
+                  <span className="text-[10px] text-gray-400">Code Review</span>
+                  <span className="text-[10px] text-gray-500">Oct 14</span>
+                </div>
+                <div className="h-[2px] bg-brand-teal flex-1 -mx-8 -mt-6"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-6 h-6 rounded-full bg-brand-teal text-[#0C0F14] flex items-center justify-center mb-2 z-10"><Shield size={14}/></div>
+                  <span className="text-[10px] text-brand-teal font-bold">Verified</span>
+                  <span className="text-[10px] text-gray-500">Oct 15</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <button className="px-5 py-2.5 bg-gray-100 text-gray-900 rounded font-medium text-sm flex items-center gap-2 hover:bg-white transition-colors">
+               <Code size={16} /> View Source
+              </button>
+              <button className="px-5 py-2.5 border border-gray-600 text-gray-300 rounded font-medium text-sm flex items-center gap-2 hover:bg-gray-800 transition-colors">
+                <ExternalLink size={16} /> Live Demo
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* Evidence Timeline for Featured Project */}
-          <div className="space-y-4 pt-4 border-t border-brand-teal/20">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono flex items-center">
-              <CheckCircle2 className="h-4 w-4 mr-2 text-brand-amber" /> Verification Evidence Audit Trail
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-              {featured.timeline.map((step, idx) => (
-                <div key={idx} className="rounded-xl border border-bright-border bg-bright-bg p-4 space-y-2 hover:border-brand-amber/40 transition-colors group">
-                  <div className="flex items-center justify-between border-b border-bright-border pb-2">
-                    <span className="font-mono text-[10px] text-brand-amber font-black bg-brand-amber/10 px-2 py-0.5 rounded">0{idx + 1}</span>
-                    <CheckCircle2 className="h-4 w-4 text-brand-teal group-hover:shadow-[0_0_8px_rgba(53,199,184,0.5)] transition-shadow rounded-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Projects List */}
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-bold text-white mb-4">Other Projects</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {others.map(proj => (
+                <div key={proj.id} className="bg-[#161b22] border border-[#262e3c] rounded-xl p-5 flex flex-col hover:border-gray-500 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-white text-lg">{proj.title}</h3>
+                    {proj.status === 'verified' && <Shield size={16} className="text-emerald-500"/>}
+                    {proj.status === 'in_review' && <span className="text-[10px] bg-brand-amber/10 text-brand-amber px-2 py-0.5 rounded border border-brand-amber/20 uppercase">In Review</span>}
                   </div>
-                  <p className="font-bold text-white text-xs leading-snug">{step.step}</p>
-                  <span className="text-[10px] text-slate-500 font-mono block">{step.date}</span>
+                  <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">{proj.description}</p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {proj.techStack.slice(0,3).map(tech => (
+                      <span key={tech} className="text-[10px] bg-gray-800 text-gray-300 px-2 py-1 rounded">{tech}</span>
+                    ))}
+                    {proj.techStack.length > 3 && <span className="text-[10px] text-gray-500">+{proj.techStack.length - 3}</span>}
+                  </div>
+                  <div className="flex gap-3 mt-auto pt-4 border-t border-gray-800">
+                     <button className="text-xs text-gray-400 hover:text-white flex items-center gap-1"><Code size={14}/> Code</button>
+                     <button className="text-xs text-gray-400 hover:text-white flex items-center gap-1"><ExternalLink size={14}/> Demo</button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* ALL PROJECTS GRID */}
-      <div className="space-y-6 pt-4">
-        <div className="flex items-center space-x-3 border-b border-bright-border pb-4">
-          <h3 className="text-2xl font-black text-white">All Verified Portfolio Apps</h3>
-          <span className="rounded-full bg-bright-bg px-3 py-1 text-xs font-mono font-bold text-slate-400 border border-bright-border">
-            {projects.length - 1} Apps
-          </span>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {projects.slice(1).map((project, idx) => {
-            const isVerified = project.status === 'Verified';
-            const statusColor = isVerified ? 'text-brand-teal' : 'text-brand-amber';
-            const statusBg = isVerified ? 'bg-brand-teal/10' : 'bg-brand-amber/10';
-            const statusBorder = isVerified ? 'border-brand-teal/30' : 'border-brand-amber/30';
-            const hoverGlow = isVerified ? 'hover:card-glow-cyan' : 'hover:card-glow-amber';
-
-            return (
-              <div
-                key={project.id}
-                className={`flex flex-col justify-between rounded-2xl glass-bright p-6 transition-all duration-300 ${hoverGlow} space-y-5`}
-              >
-                <div className="space-y-4">
-                  
-                  <div className="flex items-center justify-between">
-                    <span className={`rounded-lg px-3 py-1.5 text-[10px] font-mono font-black uppercase tracking-widest border ${statusBg} ${statusColor} ${statusBorder}`}>
-                      {project.status}
-                    </span>
-                    <div className="flex space-x-3 text-xs font-mono font-bold">
-                      <a href={project.githubUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors bg-bright-bg px-2.5 py-1.5 rounded-lg border border-bright-border flex items-center">
-                        <Code2 className="h-3.5 w-3.5 mr-1.5" />Code
-                      </a>
-                      <a href={project.liveDemoUrl} target="_blank" rel="noreferrer" className="text-brand-cyan hover:text-brand-teal transition-colors bg-brand-cyan/10 px-2.5 py-1.5 rounded-lg border border-brand-cyan/30 flex items-center">
-                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />Demo
-                      </a>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-xl font-bold text-white">{project.title}</h4>
-                    <p className="mt-2 text-xs text-slate-300 leading-relaxed line-clamp-2 font-medium">{project.description}</p>
-                  </div>
-
+          {/* Skills & Activity Sidebar */}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Technical Skills</h2>
+              <div className="glass-bright rounded-xl p-5 border border-[#262e3c]">
+                <div className="mb-4">
+                  <h4 className="text-xs text-gray-400 uppercase mb-2">AI & Data</h4>
                   <div className="flex flex-wrap gap-2">
-                    {project.techStack.map((tech) => (
-                      <span key={tech} className="rounded-md bg-bright-bg px-2.5 py-1 text-[10px] font-mono font-bold text-slate-400 border border-bright-border">
-                        {tech}
-                      </span>
-                    ))}
+                    <span className="category-pill ai-ml">PyTorch</span>
+                    <span className="category-pill ai-ml">LangChain</span>
+                    <span className="category-pill data">Pandas</span>
                   </div>
                 </div>
-
-                {/* Review Summary */}
-                <div className={`rounded-xl ${isVerified ? 'bg-brand-cyan/5 border-brand-cyan/20' : 'bg-bright-bg border-bright-border'} p-4 text-xs border`}>
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block mb-1.5 ${isVerified ? 'text-brand-cyan' : 'text-slate-500'}`}>
-                    Audit Note
-                  </span>
-                  <p className="text-slate-300 text-[11px] leading-relaxed italic">"{project.mentorReviewSummary}"</p>
+                <div>
+                  <h4 className="text-xs text-gray-400 uppercase mb-2">Web Full-Stack</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="category-pill web-dev">React</span>
+                    <span className="category-pill web-dev">Node.js</span>
+                    <span className="category-pill devops">Docker</span>
+                    <span className="category-pill devops">AWS</span>
+                  </div>
                 </div>
-
               </div>
-            );
-          })}
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Learning Activity</h2>
+              <div className="glass-bright rounded-xl p-5 border border-[#262e3c]">
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2"><Map size={16} className="text-brand-violet"/> Completed Paths</h4>
+                <div className="bg-[#161b22] border border-gray-800 p-3 rounded mb-6 text-sm text-gray-300">
+                  {JOURNEYS[0].title}
+                </div>
+                
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2"><BookOpen size={16} className="text-brand-teal"/> Completed Courses</h4>
+                <div className="space-y-2">
+                  {COURSES.slice(0,3).map(c => (
+                    <div key={c.id} className="bg-[#161b22] border border-gray-800 p-2 rounded text-xs text-gray-300 truncate">
+                      {c.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
-
     </div>
   );
-}
+};
+
+export default PortfolioPage;

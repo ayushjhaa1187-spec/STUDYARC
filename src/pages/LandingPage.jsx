@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { BookOpen, Users, Bot, Star, ArrowRight, ArrowUpRight, Github, Twitter, Linkedin, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Users, Bot, Star, ArrowRight, ArrowUpRight, ExternalLink, Globe, Link2, CheckCircle2 } from 'lucide-react';
 import { JOURNEYS, EXPERTS } from '../data/mockData';
 
 // Hook for scroll reveal animation
@@ -397,14 +397,14 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
               </div>
               <p className="text-gray-500 text-sm mb-6">The modern learning platform combining structured curriculum, AI agents, and 1-on-1 human mentorship.</p>
               <div className="flex items-center gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                  <Twitter className="w-5 h-5" />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors" aria-label="Twitter">
+                  <Globe className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                  <Linkedin className="w-5 h-5" />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors" aria-label="LinkedIn">
+                  <Link2 className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                  <Github className="w-5 h-5" />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors" aria-label="GitHub">
+                  <ExternalLink className="w-5 h-5" />
                 </a>
               </div>
             </div>

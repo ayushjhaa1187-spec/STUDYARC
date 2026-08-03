@@ -1,314 +1,226 @@
 import React, { useState } from 'react';
-import { 
-  MessageSquareCode, 
-  ThumbsUp, 
-  CheckCircle2, 
-  Bot, 
-  Plus, 
-  X, 
-  Award, 
-  User, 
-  Send,
-  Zap,
-  Video
-} from 'lucide-react';
 import { COMMUNITY_THREADS, LEADERBOARD } from '../data/mockData';
+import { MessageSquare, ThumbsUp, Search, Filter, Bot, X, CheckCircle2, Award, Zap } from 'lucide-react';
 
-export default function CommunityPage({ openMentorModal }) {
-  const [threads, setThreads] = useState(COMMUNITY_THREADS);
-  const [activeThread, setActiveThread] = useState(null);
-  const [showComposer, setShowComposer] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newCode, setNewCode] = useState('');
+const CommunityPage = ({ openMentorModal, setActivePage }) => {
+  const [activeTag, setActiveTag] = useState('All');
+  const [expandedThread, setExpandedThread] = useState(null);
+  const [showAskModal, setShowAskModal] = useState(false);
 
-  const handleUpvote = (id, e) => {
-    e.stopPropagation();
-    setThreads(threads.map(t => t.id === id ? { ...t, upvotes: t.upvotes + 1 } : t));
-  };
+  const tags = ['All', 'AI Agents', 'Web Dev', 'Data Science', 'Career', 'LangChain', 'Python', 'React'];
 
-  const handleCreateThread = (e) => {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
+  const filteredThreads = activeTag === 'All' 
+    ? COMMUNITY_THREADS 
+    : COMMUNITY_THREADS.filter(t => t.tags.includes(activeTag));
 
-    const newPost = {
-      id: Date.now(),
-      title: newTitle,
-      author: "Alex Rivera (You)",
-      authorRole: "AI Aspirant",
-      authorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-      tags: ["Python", "General"],
-      upvotes: 1,
-      status: "Open",
-      snippet: newDesc,
-      aiAnswer: "Gemini is analyzing your code snippet... Suggesting syntax fix in line 12.",
-      humanAnswersCount: 0,
-      hasAcceptedSolution: false,
-      timeAgo: "Just now"
-    };
-
-    setThreads([newPost, ...threads]);
-    setShowComposer(false);
-    setNewTitle('');
-    setNewDesc('');
-    setNewCode('');
+  const toggleThread = (id) => {
+    setExpandedThread(expandedThread === id ? null : id);
   };
 
   return (
-    <div className="space-y-8 pb-16">
-      
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 text-xs font-mono text-brand-cyan uppercase font-bold tracking-widest">
-            <MessageSquareCode className="h-4 w-4 text-brand-teal" />
-            <span>DEV-FUSION Ecosystem</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white mt-2">Doubts & Community Q&A</h1>
-          <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-            Ask technical doubts, get instant Gemini AI answers, and get verified solutions from senior peer developers.
-          </p>
+    <div className="min-h-screen bg-[#0C0F14] text-gray-200 pb-20 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2 font-display">Community Q&A</h1>
+          <p className="text-gray-400">Ask, learn, and grow with 14,000+ builders and experts.</p>
         </div>
 
-        <button
-          onClick={() => setShowComposer(true)}
-          className="flex items-center space-x-2 rounded-xl bg-bright-gradient border border-brand-cyan px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-cyan/20 hover:scale-105 transition glow-bright-cyan"
-        >
-          <Plus className="h-4 w-4 text-brand-teal" />
-          <span>Ask a Doubt</span>
-        </button>
-      </div>
-
-      {/* Main Grid: Feed + Leaderboard Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Q&A Thread Feed */}
-        <div className="lg:col-span-8 space-y-4">
-          {threads.map((thread) => (
-            <div
-              key={thread.id}
-              onClick={() => setActiveThread(thread)}
-              className="group cursor-pointer glass-bright p-6 transition-all duration-300 hover:card-glow-indigo space-y-4"
-            >
-              <div className="flex items-start justify-between gap-4">
-                
-                {/* Author Info */}
-                <div className="flex items-center space-x-3">
-                  <img src={thread.authorAvatar} alt={thread.author} className="h-10 w-10 rounded-xl object-cover border border-brand-teal/30 group-hover:border-brand-indigo transition-colors" />
-                  <div>
-                    <h4 className="text-base font-bold text-white group-hover:text-brand-indigo transition-colors">{thread.title}</h4>
-                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">{thread.author} • {thread.authorRole} • {thread.timeAgo}</p>
-                  </div>
-                </div>
-
-                {/* Upvote Button */}
-                <button
-                  onClick={(e) => handleUpvote(thread.id, e)}
-                  className="flex flex-col items-center justify-center rounded-xl border border-bright-border bg-bright-bg px-3 py-2 text-xs font-bold text-slate-300 hover:border-brand-indigo/50 hover:bg-brand-indigo/10 hover:text-brand-indigo transition-all"
-                >
-                  <ThumbsUp className="h-4 w-4 mb-1" />
-                  <span>{thread.upvotes}</span>
-                </button>
-              </div>
-
-              {/* Tag Chips */}
-              <div className="flex items-center space-x-2 pt-1">
-                {thread.tags.map((tag) => (
-                  <span key={tag} className="rounded-md bg-bright-bg px-2.5 py-1 text-[10px] font-mono font-bold text-brand-teal border border-bright-border">
-                    #{tag}
-                  </span>
-                ))}
-                <span className={`rounded-md px-2.5 py-1 text-[10px] font-mono font-bold ${
-                  thread.status === 'Answered' || thread.status === 'Verified Solution'
-                    ? 'bg-brand-teal/10 text-brand-teal border border-brand-teal/30'
-                    : 'bg-brand-amber/10 text-brand-amber border border-brand-amber/30'
-                }`}>
-                  {thread.status}
-                </span>
-              </div>
-
-              {/* Snippet Preview */}
-              <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed bg-bright-bg/80 p-3 rounded-xl border border-bright-border font-mono">
-                {thread.snippet}
-              </p>
-
-              {/* AI Suggested Summary Badge */}
-              {thread.aiAnswer && (
-                <div className="flex items-center space-x-2 text-[11px] text-brand-cyan bg-brand-cyan/10 p-3 rounded-xl border border-brand-cyan/30 font-mono shadow-[0_0_10px_rgba(6,214,160,0.15)]">
-                  <Bot className="h-4 w-4 shrink-0 text-brand-cyan animate-pulse" />
-                  <span className="truncate"><strong className="text-white">Gemini AI:</strong> {thread.aiAnswer}</span>
-                </div>
-              )}
-
+        {/* Action Row */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <button 
+            onClick={() => setShowAskModal(true)}
+            className="px-6 py-2.5 bg-brand-teal text-[#0C0F14] font-semibold rounded hover:bg-teal-400 transition-colors shadow-lg shadow-brand-teal/20"
+          >
+            Ask a Question
+          </button>
+          
+          <div className="flex w-full sm:w-auto gap-3">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+              <input 
+                type="text" 
+                placeholder="Search discussions..." 
+                className="w-full bg-[#161b22] border border-[#262e3c] rounded-md py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-brand-teal"
+              />
             </div>
+            <button className="px-3 py-2 bg-[#161b22] border border-[#262e3c] rounded-md text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+              <Filter size={16} /> Sort
+            </button>
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {tags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setActiveTag(tag)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors border ${activeTag === tag ? 'bg-brand-teal/20 text-brand-teal border-brand-teal/30' : 'bg-[#161b22] text-gray-400 border-[#262e3c] hover:bg-gray-800'}`}
+            >
+              {tag}
+            </button>
           ))}
         </div>
 
-        {/* Leaderboard & Recent Completions Sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          {/* Leaderboard Card */}
-          <div className="glass-bright card-glow-emerald p-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-bright-border">
-              <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-widest">Top Executioners</span>
-              <Award className="h-5 w-5 text-brand-amber" />
-            </div>
-
-            <div className="space-y-3">
-              {LEADERBOARD.map((user) => (
-                <div key={user.rank} className="flex items-center justify-between rounded-xl bg-bright-bg p-3 border border-bright-border text-xs hover:border-brand-emerald/40 transition-colors group">
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono font-black text-brand-amber text-sm w-5 text-center">#{user.rank}</span>
-                    <img src={user.avatar} alt={user.name} className="h-8 w-8 rounded-full object-cover border-2 border-brand-teal/30" />
-                    <div>
-                      <p className="font-bold text-white leading-tight group-hover:text-brand-teal transition-colors">{user.name}</p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{user.projects} Shipped Apps</p>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Thread List */}
+          <div className="flex-1 space-y-4">
+            {filteredThreads.map(thread => (
+              <div key={thread.id} className="glass-bright border border-[#262e3c] rounded-xl overflow-hidden transition-all hover:border-gray-500">
+                <div 
+                  className="p-5 cursor-pointer"
+                  onClick={() => toggleThread(thread.id)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-white leading-tight group-hover:text-brand-teal transition-colors">
+                      {thread.title}
+                    </h3>
+                    <div className="shrink-0 ml-4">
+                      {thread.status === 'answered' && <span className="bg-brand-teal/10 text-brand-teal border border-brand-teal/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Answered</span>}
+                      {thread.status === 'open' && <span className="bg-brand-amber/10 text-brand-amber border border-brand-amber/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Open</span>}
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-brand-cyan">{user.score}</span>
+                  
+                  <div className="flex items-center gap-3 mb-4">
+                    <img src={thread.authorAvatar} alt={thread.authorName} className="w-6 h-6 rounded-full object-cover" />
+                    <span className="text-xs text-gray-300 font-medium">{thread.authorName}</span>
+                    <span className="text-xs text-gray-500">&middot;</span>
+                    <span className="text-xs text-gray-500">{thread.timeAgo}</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {thread.tags.map(t => (
+                      <span key={t} className="text-[10px] bg-gray-800 text-gray-400 px-2 py-1 rounded">{t}</span>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center gap-6 text-sm text-gray-400">
+                    <button className="flex items-center gap-1.5 hover:text-brand-teal transition-colors" onClick={(e) => e.stopPropagation()}>
+                      <ThumbsUp size={16} /> {thread.upvotes}
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <MessageSquare size={16} /> {thread.replies}
+                    </div>
+                    {thread.aiAnswer && (
+                      <div className="flex items-center gap-1.5 text-brand-violet ml-auto">
+                        <Bot size={16} /> AI Summary Available
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Expanded Content */}
+                {expandedThread === thread.id && (
+                  <div className="border-t border-[#262e3c] bg-gray-900/50 p-5">
+                    <div className="text-sm text-gray-300 mb-6 leading-relaxed">
+                      "I'm trying to implement a RAG pipeline but getting rate limited by the OpenAI API when processing large documents. What's the best way to chunk and batch these requests effectively without losing context?"
+                    </div>
+                    
+                    {thread.aiAnswer && (
+                      <div className="bg-brand-violet/10 border border-brand-violet/20 rounded-lg p-4 mb-6 relative">
+                        <div className="absolute top-4 right-4 text-brand-violet/50"><SparklesIcon /></div>
+                        <h4 className="text-sm font-semibold text-brand-violet mb-2 flex items-center gap-2">
+                          <Bot size={16} /> Gemini Suggested Answer
+                        </h4>
+                        <div className="text-sm text-gray-300 space-y-2">
+                          <p>To avoid rate limits while maintaining context in a RAG pipeline:</p>
+                          <ul className="list-disc pl-5 space-y-1">
+                            <li><strong>Chunking:</strong> Use Semantic Chunking instead of fixed-size. Overlap chunks by 10-15%.</li>
+                            <li><strong>Batching:</strong> Implement exponential backoff for retries (e.g., using Tenacity in Python).</li>
+                            <li><strong>Concurrency:</strong> Limit concurrent requests using a semaphore (e.g., asyncio.Semaphore(5)).</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-800">
+                      <span className="text-sm text-gray-400">{thread.replies} Community Replies</span>
+                      <button 
+                        onClick={() => setActivePage('/experts')}
+                        className="text-xs px-4 py-2 border border-brand-teal/50 text-brand-teal rounded hover:bg-brand-teal/10 transition-colors"
+                      >
+                        Ask an Expert Instead
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* Quick Mentor Referral Banner */}
-          <div className="glass-bright card-glow-amber p-6 space-y-4 relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 h-24 w-24 bg-brand-amber/20 blur-2xl rounded-full"></div>
-            
-            <div className="flex items-center space-x-2 text-brand-amber text-xs font-mono font-bold uppercase tracking-wide">
-              <Zap className="h-4 w-4" />
-              <span>Stuck on a complex doubt?</span>
-            </div>
-            
-            <p className="text-sm text-slate-300 leading-relaxed font-medium">
-              Convert your open Q&A thread directly into a 1-on-1 expert code roast session with a verified mentor.
-            </p>
-            
-            <button
-              onClick={() => openMentorModal()}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-bright-bg border border-brand-amber py-3 text-xs font-extrabold text-brand-amber shadow-md hover:bg-brand-amber/10 transition-colors mt-2"
-            >
-              <Video className="h-4 w-4" />
-              <span>Convert to 1-on-1 Session</span>
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* COMPOSER MODAL */}
-      {showComposer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="relative w-full max-w-xl rounded-2xl glass-bright card-glow-cyan p-8 shadow-2xl space-y-6">
-            <button onClick={() => setShowComposer(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white transition">
-              <X className="h-5 w-5" />
-            </button>
-
-            <h3 className="text-2xl font-black text-white">Ask a Technical Doubt</h3>
-            
-            <form onSubmit={handleCreateThread} className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1.5 uppercase tracking-wider">Question Title</label>
-                <input
-                  type="text"
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. How to handle connection timeouts in FastAPI WebSockets?"
-                  className="w-full rounded-xl border border-bright-border bg-bright-bg px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-brand-teal focus:outline-none focus:ring-1 focus:ring-brand-teal transition"
-                />
+          {/* Right Sidebar */}
+          <div className="w-full lg:w-72 space-y-6">
+            <div className="glass-bright border border-[#262e3c] rounded-xl p-5">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <Award size={18} className="text-brand-amber"/> Leaderboard
+              </h3>
+              <div className="space-y-4">
+                {LEADERBOARD.slice(0,4).map((user, idx) => (
+                  <div key={user.id} className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${idx === 0 ? 'bg-amber-500 text-white' : idx === 1 ? 'bg-gray-300 text-gray-900' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-gray-800 text-gray-400'}`}>
+                      {idx + 1}
+                    </div>
+                    <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white truncate">{user.name}</p>
+                      <p className="text-[10px] text-brand-teal">{user.points} XP</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1.5 uppercase tracking-wider">Description & Details</label>
-                <textarea
-                  rows="4"
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  placeholder="Describe what you tried and expected output..."
-                  className="w-full rounded-xl border border-bright-border bg-bright-bg px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-brand-teal focus:outline-none focus:ring-1 focus:ring-brand-teal transition"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1.5 uppercase tracking-wider">Code Snippet (Optional)</label>
-                <textarea
-                  rows="3"
-                  value={newCode}
-                  onChange={(e) => setNewCode(e.target.value)}
-                  placeholder="Paste your code block here..."
-                  className="w-full rounded-xl border border-bright-border bg-[#0C0F14] font-mono text-[11px] text-brand-teal px-4 py-3 placeholder-slate-600 focus:border-brand-teal focus:outline-none focus:ring-1 focus:ring-brand-teal transition"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4 border-t border-bright-border">
-                <button type="button" onClick={() => setShowComposer(false)} className="px-5 py-2.5 text-sm text-slate-400 font-bold hover:text-white transition">Cancel</button>
-                <button
-                  type="submit"
-                  className="flex items-center space-x-2 rounded-xl bg-bright-gradient border border-brand-cyan px-6 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-brand-cyan/20 glow-bright-cyan hover:scale-105 transition"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>Post Doubt</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* THREAD DETAIL MODAL */}
-      {activeThread && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl glass-bright card-glow-indigo p-8 shadow-2xl space-y-6 scrollbar-thin">
-            <button onClick={() => setActiveThread(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white transition">
-              <X className="h-6 w-6" />
-            </button>
-
-            <div>
-              <div className="flex items-center space-x-2 text-xs font-mono text-brand-cyan font-bold tracking-widest uppercase">
-                <span>Thread #{activeThread.id}</span>
-                <span>• {activeThread.status}</span>
-              </div>
-              <h2 className="text-2xl font-black text-white mt-2">{activeThread.title}</h2>
-              <p className="text-xs text-slate-400 font-mono mt-1.5">Asked by {activeThread.author} ({activeThread.authorRole})</p>
             </div>
 
-            {/* Original question snippet */}
-            <div className="rounded-xl border border-bright-border bg-bright-bg p-5 text-sm text-slate-300 leading-relaxed font-mono">
-              {activeThread.snippet}
-            </div>
-
-            {/* Gemini AI Suggested Answer */}
-            <div className="rounded-xl border border-brand-cyan/40 bg-brand-cyan/10 p-5 space-y-3 shadow-[0_0_15px_rgba(6,214,160,0.1)]">
-              <div className="flex items-center space-x-2 text-sm font-black text-brand-cyan font-mono tracking-wide uppercase">
-                <Bot className="h-5 w-5 animate-pulse" />
-                <span>Gemini AI Verified Answer</span>
-              </div>
-              <p className="text-sm text-white leading-relaxed">{activeThread.aiAnswer}</p>
-            </div>
-
-            {/* Convert to Mentor Session Callout */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-brand-amber/30 bg-brand-amber/5 p-5">
-              <div>
-                <h5 className="text-sm font-bold text-white">Need live hands-on pair programming?</h5>
-                <p className="text-xs text-slate-400 mt-1">Book a 30-min instant session with an expert mentor for this issue.</p>
-              </div>
-              <button
-                onClick={() => {
-                  setActiveThread(null);
-                  openMentorModal();
-                }}
-                className="rounded-xl bg-bright-bg border border-brand-amber px-5 py-2.5 text-xs font-extrabold text-brand-amber shadow-md hover:bg-brand-amber/10 whitespace-nowrap transition"
+            <div className="glass-bright border border-[#262e3c] rounded-xl p-5 bg-gradient-to-br from-[#161b22] to-brand-teal/10">
+              <Zap size={24} className="text-brand-teal mb-3" />
+              <h3 className="font-semibold text-white mb-2">Need faster answers?</h3>
+              <p className="text-xs text-gray-400 mb-4">Book a 1:1 session with an industry expert to unblock your progress.</p>
+              <button 
+                onClick={() => setActivePage('/experts')}
+                className="w-full py-2 bg-white text-gray-900 text-sm font-semibold rounded hover:bg-gray-200 transition-colors"
               >
-                Book Mentor
+                Find an Expert
               </button>
             </div>
-
           </div>
         </div>
-      )}
+      </div>
 
+      {/* Ask Modal */}
+      {showAskModal && (
+        <>
+          <div className="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-40" onClick={() => setShowAskModal(false)}></div>
+          <div className="modal-panel fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#0f131a] border border-[#262e3c] rounded-xl z-50 shadow-2xl animate-slide-up">
+            <div className="flex justify-between items-center p-5 border-b border-[#262e3c]">
+              <h2 className="text-lg font-semibold text-white">Ask the Community</h2>
+              <button onClick={() => setShowAskModal(false)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                <input type="text" placeholder="e.g. How to handle context limits in LangChain?" className="w-full bg-[#161b22] border border-[#262e3c] rounded-md p-2.5 text-white text-sm focus:border-brand-teal focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                <textarea rows="5" placeholder="Provide details about your problem, what you've tried..." className="w-full bg-[#161b22] border border-[#262e3c] rounded-md p-2.5 text-white text-sm focus:border-brand-teal focus:outline-none"></textarea>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Tags (comma separated)</label>
+                <input type="text" placeholder="react, machine-learning, api" className="w-full bg-[#161b22] border border-[#262e3c] rounded-md p-2.5 text-white text-sm focus:border-brand-teal focus:outline-none" />
+              </div>
+              <div className="pt-4 flex justify-end gap-3">
+                <button onClick={() => setShowAskModal(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancel</button>
+                <button onClick={() => setShowAskModal(false)} className="px-6 py-2 bg-brand-teal text-[#0C0F14] text-sm font-semibold rounded hover:bg-teal-400">Post Question</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
-}
+};
+
+const SparklesIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>;
+
+export default CommunityPage;
