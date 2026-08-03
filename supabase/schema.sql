@@ -24,7 +24,10 @@ CREATE TABLE public.assessments (
     readiness_score INTEGER NOT NULL,
     recommended_journey TEXT NOT NULL,
     gap_analysis JSONB NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+    ai_output JSONB,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
 -- 3. Sprints Table (Active Execution Sprints)
@@ -99,13 +102,11 @@ CREATE TABLE public.chat_history (
 CREATE TABLE public.daily_progress (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  sprint_id UUID NOT NULL REFERENCES public.sprints(id) ON DELETE CASCADE,
-  day INTEGER NOT NULL,
-  is_completed BOOLEAN DEFAULT FALSE,
-  completed_at TIMESTAMPTZ,
-  notes TEXT, -- optional user notes for reflection
+  sprint_id UUID NOT NULL REFERENCES public.sprints(id) ON DELETE CASCADE UNIQUE,
+  completion_mask BIGINT DEFAULT 0, -- bitmask where nth bit represents day n completion
+  notes JSONB DEFAULT '{}'::jsonb, -- optional user notes mapped by day
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  UNIQUE(sprint_id, day)
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
 -- 7. User Activity Log for analytics
@@ -152,7 +153,7 @@ CREATE TABLE public.expert_bookings (
 );
 
 ALTER TABLE public.expert_bookings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id OR auth.uid() = expert_id);
 CREATE POLICY "Users can insert own bookings" ON public.expert_bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 9. Mentors Profile Table
@@ -167,6 +168,7 @@ CREATE TABLE public.mentors_profile (
 
 ALTER TABLE public.mentors_profile ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Mentors can view own profile" ON public.mentors_profile FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Public can view verified mentor profiles" ON public.mentors_profile FOR SELECT USING (verification_status = 'verified');
 CREATE POLICY "Mentors can update own profile" ON public.mentors_profile FOR UPDATE USING (auth.uid() = id);
 -- Admins will have a bypass policy or use a custom claim to view all mentor profiles.
 
@@ -197,3 +199,31 @@ CREATE TABLE public.audit_logs (
 );
 
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- INDEXES FOR PERFORMANCE
+CREATE INDEX idx_sprints_user_id ON public.sprints(user_id);
+CREATE INDEX idx_tasks_sprint_id ON public.tasks(sprint_id);
+CREATE INDEX idx_assessments_user_id ON public.assessments(user_id);
+CREATE INDEX idx_chat_history_sprint_id ON public.chat_history(sprint_id);
+CREATE INDEX idx_expert_bookings_user_id ON public.expert_bookings(user_id);
+CREATE INDEX idx_expert_bookings_expert_id ON public.expert_bookings(expert_id);
+CREATE INDEX idx_mentor_payouts_mentor_id ON public.mentor_payouts(mentor_id);
+
+-- TRIGGERS FOR UPDATED_AT
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = TIMEZONE('utc', NOW());
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_assessments_updated_at
+    BEFORE UPDATE ON public.assessments
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_daily_progress_updated_at
+    BEFORE UPDATE ON public.daily_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

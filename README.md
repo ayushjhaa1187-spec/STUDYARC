@@ -1,16 +1,56 @@
-# React + Vite
+# SkillBridge Pro (StudyArc)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A comprehensive AI-powered learning and mentorship platform. This project includes a sophisticated TypeScript Express backend integrated with Supabase, Gemini AI, and Razorpay.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **AI Diagnostics**: Evaluates user skills and recommends personalized learning journeys.
+- **Sprint Management**: Daily task tracking with XP rewards and streak mechanics.
+- **AI Coach**: Context-aware Gemini AI assistant to help learners.
+- **Portfolio Pre-check**: Automated AI evaluation of submitted projects.
+- **Expert Mentorship**: Book verified mentors for 1-on-1 sessions.
+- **Secure Payments**: Razorpay integration with robust webhook verification.
+- **Role-Based Access**: Learner, Mentor, and Admin roles secured by Supabase RLS.
 
-## React Compiler
+## Architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Backend**: Express + TypeScript + Zod (Validation).
+- **Database**: Supabase (PostgreSQL) with Row Level Security (RLS).
+- **Edge Functions**: Supabase Edge Function for Razorpay Webhook fallback.
+- **AI**: Google Gemini (1.5 Pro).
+- **Payments**: Razorpay (Sandbox).
 
-## Expanding the Oxlint configuration
+## Local Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+1. **Clone & Install Dependencies**
+   ```bash
+   npm install
+   ```
+2. **Environment Variables**
+   Copy `.env.example` to `.env` and fill in your Supabase, Gemini, and Razorpay credentials.
+
+3. **Database Migrations**
+   Execute the generated migration files inside `supabase/migrations/` in your Supabase SQL Editor in numerical order.
+
+4. **Seed Data**
+   Run the `006_seed_data.sql` to populate Journey Templates and Challenges.
+
+5. **Run the Server**
+   ```bash
+   npm run dev
+   ```
+   This will run both the Vite frontend and the Node TS backend concurrently.
+
+## Testing
+We use Jest and Supertest for backend API verification.
+```bash
+npm run test
+```
+
+## Deployment (Cloud Run)
+1. Build the TypeScript backend:
+   ```bash
+   npm run build:server
+   ```
+2. Create a Dockerfile for the Express server.
+3. Deploy to Google Cloud Run and set environment variables.
