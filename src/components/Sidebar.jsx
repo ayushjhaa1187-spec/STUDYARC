@@ -15,19 +15,21 @@ import {
   LogIn
 } from 'lucide-react';
 
-export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsCollapsed, openDiagnostic }) {
+export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsCollapsed, openDiagnostic, userRole }) {
   const navItems = [
-    { id: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { id: '/journeys', label: 'Journeys', icon: Compass },
-    { id: '/courses', label: 'Courses', icon: Zap },
-    { id: '/challenges', label: 'Challenges', icon: CheckSquare },
-    { id: '/mentors', label: 'Mentors', icon: Users },
-    { id: '/portfolio', label: 'Portfolio', icon: Briefcase },
-    { id: '/community', label: 'Community', icon: MessageSquareCode },
-    { id: '/settings', label: 'Settings', icon: Settings },
-    { id: '/admin', label: 'Admin Panel', icon: ShieldCheck },
-    { id: '/login', label: 'Sign In / Account', icon: LogIn },
+    { id: '/dashboard', label: 'Overview', icon: LayoutDashboard, roles: ['learner', 'mentor', 'admin'] },
+    { id: '/journeys', label: 'Journeys', icon: Compass, roles: ['learner', 'admin'] },
+    { id: '/courses', label: 'Courses', icon: Zap, roles: ['learner', 'admin'] },
+    { id: '/challenges', label: 'Challenges', icon: CheckSquare, roles: ['learner', 'admin'] },
+    { id: '/mentors', label: 'Mentors', icon: Users, roles: ['learner', 'admin'] },
+    { id: '/portfolio', label: 'Portfolio', icon: Briefcase, roles: ['learner', 'mentor', 'admin'] },
+    { id: '/community', label: 'Community', icon: MessageSquareCode, roles: ['learner', 'mentor', 'admin'] },
+    { id: '/settings', label: 'Settings', icon: Settings, roles: ['learner', 'mentor', 'admin'] },
+    { id: '/admin', label: 'Admin Panel', icon: ShieldCheck, roles: ['admin'] },
+    { id: '/login', label: 'Sign In / Account', icon: LogIn, roles: ['learner', 'mentor', 'admin'] },
   ];
+
+  const visibleNavItems = navItems.filter(item => !item.roles || item.roles.includes(userRole));
 
   return (
     <aside
@@ -38,7 +40,7 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
       <div className="flex h-full flex-col justify-between p-3">
         {/* Nav list */}
         <div className="space-y-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
             return (
@@ -64,7 +66,7 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
 
         {/* Bottom Callout / Collapse button */}
         <div className="space-y-3">
-          {!isCollapsed && (
+          {!isCollapsed && userRole === 'learner' && (
             <div className="rounded-xl border border-emerald-400/40 bg-gradient-to-b from-slate-900 to-emerald-950/40 p-3.5 shadow-md">
               <div className="flex items-center space-x-2 text-emerald-300 text-xs font-bold">
                 <Sparkles className="h-4 w-4" />

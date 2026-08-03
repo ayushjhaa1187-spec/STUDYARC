@@ -17,7 +17,7 @@ import { supabase } from '../lib/supabase';
 
 export default function AuthPage({ onLoginSuccess, setActivePage }) {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [role, setRole] = useState('student');
+  const [role, setRole] = useState('learner');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -53,11 +53,11 @@ export default function AuthPage({ onLoginSuccess, setActivePage }) {
       if (data?.user) {
         onLoginSuccess({
           name: data.user.user_metadata?.full_name || email.split('@')[0],
-          role: data.user.user_metadata?.role === 'student' ? 'AI & Full-Stack Aspirant' : 'Mentor Lead',
+          role: data.user.user_metadata?.role || role,
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
           plan: 'Pro Tier'
         });
-        setActivePage('/dashboard');
+        setActivePage(role === 'admin' ? '/admin' : '/dashboard');
       }
     } catch (err) {
       console.error('Auth Error:', err);
@@ -138,9 +138,9 @@ export default function AuthPage({ onLoginSuccess, setActivePage }) {
             {/* Role Switcher */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                { id: 'student', label: 'Learner / Aspirant' },
+                { id: 'learner', label: 'Learner / Aspirant' },
                 { id: 'mentor', label: 'Expert Mentor' },
-                { id: 'recruiter', label: 'Recruiter' }
+                { id: 'admin', label: 'Admin' }
               ].map((r) => (
                 <button
                   key={r.id}

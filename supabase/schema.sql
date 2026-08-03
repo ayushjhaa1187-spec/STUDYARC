@@ -144,8 +144,10 @@ CREATE TABLE public.expert_bookings (
     slot_time TIMESTAMP WITH TIME ZONE NOT NULL,
     amount_paid NUMERIC(10, 2) NOT NULL,
     payment_order_id TEXT,
+    razorpay_payment_id TEXT,
+    webhook_event_id TEXT UNIQUE,
     payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed')),
-    status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled')),
+    status TEXT DEFAULT 'pending_payment' CHECK (status IN ('pending_payment', 'confirmed', 'scheduled', 'completed', 'cancelled')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
@@ -168,3 +170,30 @@ CREATE POLICY "Mentors can view own profile" ON public.mentors_profile FOR SELEC
 CREATE POLICY "Mentors can update own profile" ON public.mentors_profile FOR UPDATE USING (auth.uid() = id);
 -- Admins will have a bypass policy or use a custom claim to view all mentor profiles.
 
+-- PHASE 5: PAYMENTS & AUDITING --
+
+-- 10. Mentor Payouts
+CREATE TABLE public.mentor_payouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    booking_id UUID REFERENCES public.expert_bookings(id) ON DELETE CASCADE,
+    mentor_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    amount NUMERIC(10, 2) NOT NULL,
+    platform_fee NUMERIC(10, 2) NOT NULL,
+    status TEXT DEFAULT 'eligible' CHECK (status IN ('eligible', 'processing', 'paid', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.mentor_payouts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Mentors can view own payouts" ON public.mentor_payouts FOR SELECT USING (auth.uid() = mentor_id);
+
+-- 11. Audit Logs
+CREATE TABLE public.audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id),
+    action_type TEXT NOT NULL,
+    entity_id UUID,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;

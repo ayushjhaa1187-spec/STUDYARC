@@ -14,6 +14,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+import agentsRouter from './routes/agents.js';
+app.use('/api/agents', agentsRouter);
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy_key_123',
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_abc123'
@@ -44,59 +47,6 @@ app.post('/api/apply-coupon', (req, res) => {
   }
 });
 
-app.post('/api/diagnostic', async (req, res) => {
-  try {
-    const { targetRole, hours, selectedSkills } = req.body;
-    
-    const prompt = `
-      You are an expert technical career coach. A user wants to become a ${targetRole}.
-      They have ${hours} hours per week to study.
-      They already know: ${selectedSkills.join(', ')}.
-
-      Analyze their profile and return a JSON object ONLY, with NO markdown formatting, NO backticks.
-      
-      Required JSON structure:
-      {
-        "score": (integer between 10 and 95 representing readiness),
-        "targetRole": "${targetRole}",
-        "recommendedJourney": (string, e.g. "Full-Stack Job-Ready Sprint"),
-        "timeToProof": (string, e.g. "8 Weeks"),
-        "gapAnalysis": [
-          (string, 3 specific technical points analyzing their gaps)
-        ]
-      }
-    `;
-
-    const result = await model.generateContent(prompt);
-    let textResponse = result.response.text().trim();
-    
-    // Strip markdown formatting if Gemini includes it
-    if (textResponse.startsWith('\`\`\`json')) {
-      textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '');
-    } else if (textResponse.startsWith('\`\`\`')) {
-      textResponse = textResponse.replace(/\`\`\`/g, '');
-    }
-
-    const jsonResponse = JSON.parse(textResponse);
-    res.json(jsonResponse);
-
-  } catch (error) {
-    console.error('Gemini API Error or Invalid Key, falling back to mock:', error.message);
-    // If the provided API key is invalid or unauthorized, return a valid mock JSON to satisfy the flow
-    const { targetRole } = req.body;
-    res.json({
-      score: 82,
-      targetRole: targetRole || "AI Engineer",
-      recommendedJourney: `${targetRole} Accelerator Sprint`,
-      timeToProof: "4 Weeks",
-      gapAnalysis: [
-        "Strong fundamental knowledge base.",
-        "Requires portfolio evidence of production deployments.",
-        "Needs focus on system architecture patterns."
-      ]
-    });
-  }
-});
 
 // Razorpay Order Creation Endpoint
 app.post('/api/create-order', async (req, res) => {
@@ -136,39 +86,6 @@ app.post('/api/create-order', async (req, res) => {
   }
 });
 
-app.post('/api/coach', async (req, res) => {
-  try {
-    const { message, context } = req.body;
-    
-    const prompt = `
-      You are an expert AI execution coach helping a user with their sprint task.
-      Context: ${context || 'Working on a technical sprint.'}
-      User asks: ${message}
-
-      Provide a concise, highly technical response. Include a short code snippet if relevant.
-      Format the response strictly as JSON:
-      {
-        "text": "Your advice here...",
-        "codeSnippet": "Optional code snippet here, or null"
-      }
-    `;
-
-    const result = await model.generateContent(prompt);
-    let textResponse = result.response.text().trim();
-    
-    if (textResponse.startsWith('\`\`\`json')) textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '');
-    else if (textResponse.startsWith('\`\`\`')) textResponse = textResponse.replace(/\`\`\`/g, '');
-
-    const jsonResponse = JSON.parse(textResponse);
-    res.json(jsonResponse);
-  } catch (error) {
-    console.error('Gemini API Error (Coach):', error.message);
-    res.json({
-      text: "I analyzed your query: '" + req.body.message + "'. Make sure to verify your endpoint connections and check for syntax errors in your router.",
-      codeSnippet: "console.log('Debugging connection...');\n// Fallback coach response active"
-    });
-  }
-});
 
 app.post('/api/chat', async (req, res) => {
   try {

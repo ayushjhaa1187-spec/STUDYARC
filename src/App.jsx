@@ -24,7 +24,7 @@ import CartCheckoutModal from './components/CartCheckoutModal';
 
 import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
-import { INITIAL_USER, MENTORS, DAILY_TASKS } from './data/mockData';
+import { INITIAL_USER, INITIAL_MENTOR_USER, INITIAL_ADMIN_USER, MENTORS, DAILY_TASKS } from './data/mockData';
 
 export default function App() {
   const [activePage, setActivePage] = useState('/');
@@ -112,6 +112,7 @@ export default function App() {
             isCollapsed={isSidebarCollapsed}
             setIsCollapsed={setIsSidebarCollapsed}
             openDiagnostic={() => setIsDiagnosticOpen(true)}
+            userRole={user.role}
           />
         )}
 
@@ -143,7 +144,12 @@ export default function App() {
 
               {activePage === '/login' && (
                 <AuthPage
-                  onLoginSuccess={(userData) => setUser(prev => ({ ...prev, ...userData }))}
+                  onLoginSuccess={(userData) => {
+                    let baseUser = INITIAL_USER;
+                    if (userData.role === 'mentor') baseUser = INITIAL_MENTOR_USER;
+                    if (userData.role === 'admin') baseUser = INITIAL_ADMIN_USER;
+                    setUser({ ...baseUser, ...userData });
+                  }}
                   setActivePage={handlePageChange}
                 />
               )}
