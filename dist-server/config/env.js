@@ -12,5 +12,6 @@ export const env = {
     RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET || 'dummy_webhook_secret_123',
     SUPABASE_URL: process.env.VITE_SUPABASE_URL || 'https://dummy-project.supabase.co',
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-service-role-key',
-    SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET || 'super-secret-jwt-token-with-at-least-32-characters-long'
+    SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET || 'super-secret-jwt-token-with-at-least-32-characters-long',
+    CRON_SECRET: process.env.CRON_SECRET || 'dummy-cron-secret-123'
 };

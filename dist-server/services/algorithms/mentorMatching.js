@@ -5,7 +5,7 @@ import { supabaseAdmin } from '../../config/supabase.js';
  */
 export async function getTopMentors(criteria) {
     const { requiredTags, budget, limit = 5 } = criteria;
-    // Call our SQL-based RPC mentor matcher
+    // Call the database RPC to perform the matching and ranking on the database side
     const { data: mentors, error } = await supabaseAdmin.rpc('match_mentors', {
         p_tags: requiredTags,
         p_budget: budget,

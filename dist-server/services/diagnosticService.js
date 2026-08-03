@@ -81,6 +81,16 @@ export class DiagnosticService {
             evidence_score: breakdown.evidenceScore,
             trigger_event: 'diagnostic_completed'
         });
+        // Audit log for Agent decision
+        await supabaseAdmin
+            .from('agent_decision_audit_logs')
+            .insert({
+            assessment_id: assessmentId,
+            user_id: userId,
+            action_type: 'diagnostic_evaluation',
+            input_payload: { targetRole, weeklyHours, skills, experienceLevel },
+            ai_output: aiAnalysis
+        });
         return assessment;
     }
 }

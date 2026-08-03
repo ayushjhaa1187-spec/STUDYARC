@@ -13,7 +13,8 @@ export class AiService {
       - Current Skills: ${skills.join(', ')}
       - Experience Level: ${experienceLevel}
       
-      Provide a comprehensive diagnostic evaluation for this student to get an internship or job.
+      Provide a comprehensive diagnostic evaluation for this student to assess their career readiness and skill gaps. 
+      CRITICAL RULE: Do not promise jobs, salary, income, admission, or guaranteed outcomes under any circumstances. Focus purely on skill development and objective readiness.
     `;
         const schema = {
             type: SchemaType.OBJECT,
