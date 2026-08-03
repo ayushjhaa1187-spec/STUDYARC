@@ -1,10 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import Razorpay from 'razorpay';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Import Routers
+import authRouter from './routes/auth.js';
+import diagnosticsRouter from './routes/diagnostics.js';
+import aiRouter from './routes/ai.js';
+import mentorsRouter from './routes/mentors.js';
+import portfolioRouter from './routes/portfolio.js';
+import communityRouter from './routes/community.js';
+import paymentsRouter from './routes/payments.js';
+import adminRouter from './routes/admin.js';
+import webhooksRouter from './routes/webhooks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,88 +23,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-import agentsRouter from './routes/agents.js';
-import paymentsRouter from './routes/payments.js';
-import adminRouter from './routes/admin.js';
-
-app.use('/api/agents', agentsRouter);
-app.use('/api/payments', paymentsRouter);
-app.use('/api/admin', adminRouter);
-
 const PORT = 3001;
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-// Hardcoded secret coupons (NOT exposed to frontend)
-const VALID_COUPONS = {
-  'ayush1187': 100,
-  'aniketman': 200,
-  'vishal102': 150
-};
-
-app.post('/api/apply-coupon', (req, res) => {
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ error: 'Code required' });
-  
-  const discount = VALID_COUPONS[code.toLowerCase()];
-  if (discount) {
-    res.json({ valid: true, discount, message: `Coupon applied! ₹${discount} off.` });
-  } else {
-    res.json({ valid: false, discount: 0, message: 'Invalid coupon code.' });
+// Global Error Handler for JSON parsing
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).send({ error: 'Bad JSON' });
   }
+  next();
 });
 
+// API Routes mounting
+app.use('/api/me', authRouter); // Auth and profile
+app.use('/api', diagnosticsRouter); // Diagnostics, Journeys, Tasks
+app.use('/api/agents', aiRouter); // AI Agents
+app.use('/api/mentors', mentorsRouter); // Mentors and Mentor bookings
+app.use('/api/bookings', mentorsRouter); // Bookings map to mentors router
+app.use('/api/portfolio', portfolioRouter); // Portfolio
+app.use('/api/projects', portfolioRouter); // Projects map to portfolio router
+app.use('/api/community', communityRouter); // Community threads and votes
+app.use('/api/payments', paymentsRouter); // Payments
+app.use('/api/admin', adminRouter); // Admin routes
+app.use('/api/webhooks', webhooksRouter); // Webhooks
 
-
-
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { message } = req.body;
-    const prompt = `You are a helpful support assistant for SkillBridge Pro. 
-User asks: ${message}
-Keep the response helpful, friendly, and concise (under 3 sentences).`;
-    const result = await model.generateContent(prompt);
-    res.json({ text: result.response.text().trim() });
-  } catch (error) {
-    res.json({ text: "I'm having trouble connecting right now, but I'm here to help you navigate SkillBridge Pro! Try asking again later." });
-  }
-});
-
-app.post('/api/course-match', async (req, res) => {
-  try {
-    const { query } = req.body;
-    const prompt = `
-      A user wants to learn: ${query}
-      We have YouTube playlist courses on our platform.
-      Recommend 1 to 3 YouTube playlist courses for this goal.
-      Format as strict JSON array of objects:
-      [
-        {
-          "title": "Course Title",
-          "description": "Short description",
-          "youtubeUrl": "A real or realistic youtube playlist URL",
-          "difficulty": "Beginner | Intermediate | Advanced"
-        }
-      ]
-    `;
-    const result = await model.generateContent(prompt);
-    let text = result.response.text().trim();
-    if (text.startsWith('\`\`\`json')) text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '');
-    else if (text.startsWith('\`\`\`')) text = text.replace(/\`\`\`/g, '');
-    res.json(JSON.parse(text));
-  } catch (error) {
-    // Fallback Mock
-    res.json([
-      {
-        title: "Full Stack Masterclass",
-        description: "Comprehensive guide to modern web development.",
-        youtubeUrl: "https://www.youtube.com/watch?v=PkZNo7MFOUg",
-        difficulty: "Beginner"
-      }
-    ]);
-  }
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 app.listen(PORT, () => {
