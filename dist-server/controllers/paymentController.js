@@ -92,6 +92,17 @@ export const handleWebhook = async (req, res) => {
                     .single();
                 // If updatedBooking is null, it means it was already processed or not found
                 if (updatedBooking && !updateError) {
+                    // Audit Log
+                    await supabaseAdmin
+                        .from('payment_audit_logs')
+                        .insert({
+                        booking_id: bookingId,
+                        razorpay_order_id,
+                        razorpay_payment_id,
+                        webhook_event_id: webhookEventId,
+                        event_type: event.event,
+                        status: 'success'
+                    });
                     // Outbox Pattern: Insert job for post-payment side effects (emails, payouts)
                     await supabaseAdmin
                         .from('job_queue')

@@ -2,10 +2,10 @@ import { Router } from 'express';
 import { getMe } from '../controllers/authController.js';
 import { evaluateDiagnostic } from '../controllers/diagnosticController.js';
 import { getActiveSprints, completeTask, markDayComplete } from '../controllers/sprintController.js';
-import { chatWithCoach } from '../controllers/coachController.js';
+import { chatWithCoach, globalChat, courseMatch } from '../controllers/coachController.js';
 import { submitPortfolio } from '../controllers/portfolioController.js';
 import { getMentors, createBooking } from '../controllers/bookingController.js';
-import { handleWebhook } from '../controllers/paymentController.js';
+import { handleWebhook, applyCoupon, createOrder } from '../controllers/paymentController.js';
 import { getMetrics } from '../controllers/adminController.js';
 import { processJobs } from '../controllers/jobController.js';
 import { dailyCronJobs } from '../controllers/cronController.js';
@@ -33,11 +33,15 @@ router.post('/sprints/daily-progress', requireAuth, markDayComplete);
 
 // AI Coach & Portfolio
 router.post('/coach/chat', requireAuth, aiChatLimiter, validateRequest(schemas.ChatMessageSchema), chatWithCoach);
+router.post('/chat', aiChatLimiter, globalChat); // Global chatbot does not strictly require auth according to its usage but rate limiting is good
+router.post('/course-match', aiChatLimiter, courseMatch);
 router.post('/portfolio/submit', requireAuth, validateRequest(schemas.PortfolioSubmissionSchema), submitPortfolio);
 
 // Mentorship & Payments
 router.get('/mentors', requireAuth, getMentors);
 router.post('/bookings/create', requireAuth, bookingLimiter, validateRequest(schemas.CreateBookingSchema), createBooking);
+router.post('/payments/apply-coupon', paymentLimiter, applyCoupon);
+router.post('/payments/create-order', paymentLimiter, createOrder);
 router.post('/payments/webhook', paymentLimiter, handleWebhook); // Razorpay sends this, no requireAuth
 
 // Internal / Admin Jobs
