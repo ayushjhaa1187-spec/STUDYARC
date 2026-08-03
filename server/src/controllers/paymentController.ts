@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { verifyWebhookSignature } from '../config/razorpay.js';
+import { logger } from '../utils/logger.js';
 
 export const handleWebhook = async (req: Request, res: Response) => {
   try {
@@ -8,6 +9,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
     const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
     if (!signature || !verifyWebhookSignature(rawBody, signature)) {
+      logger.warn('Invalid webhook signature attempt');
       return res.status(400).json({ error: 'Invalid signature' });
     }
 
@@ -47,7 +49,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
 
     res.json({ success: true });
   } catch (error: any) {
-    console.error('Webhook Error:', error);
+    logger.error('Webhook Error:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Webhook processing failed', details: error.message });
   }
 };
