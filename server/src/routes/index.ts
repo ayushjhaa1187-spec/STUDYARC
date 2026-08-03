@@ -7,6 +7,8 @@ import { submitPortfolio } from '../controllers/portfolioController.js';
 import { getMentors, createBooking } from '../controllers/bookingController.js';
 import { handleWebhook } from '../controllers/paymentController.js';
 import { getMetrics } from '../controllers/adminController.js';
+import { processJobs } from '../controllers/jobController.js';
+import { dailyCronJobs } from '../controllers/cronController.js';
 
 import { requireAuth, requireRole } from '../middlewares/auth.js';
 import { validateRequest } from '../middlewares/validate.js';
@@ -38,7 +40,9 @@ router.get('/mentors', requireAuth, getMentors);
 router.post('/bookings/create', requireAuth, bookingLimiter, validateRequest(schemas.CreateBookingSchema), createBooking);
 router.post('/payments/webhook', paymentLimiter, handleWebhook); // Razorpay sends this, no requireAuth
 
-// Admin
+// Internal / Admin Jobs
+router.post('/cron/daily', dailyCronJobs);
+router.post('/internal/jobs/process', processJobs);
 router.get('/admin/metrics', requireAuth, requireRole('admin'), getMetrics);
 
 export default router;

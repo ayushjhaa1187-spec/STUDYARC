@@ -1,22 +1,26 @@
 import { jest, describe, it, expect } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
-import { verifyRazorpaySignature } from '../config/razorpay.js';
-import apiRoutes from '../routes/index.js';
+
+// Mock Razorpay config
+jest.unstable_mockModule('../config/razorpay.js', () => ({
+  verifyWebhookSignature: jest.fn<any>(),
+  verifyRazorpaySignature: jest.fn<any>(),
+  razorpay: {
+    orders: {
+      create: jest.fn<any>().mockResolvedValue({ id: 'order_test_123', amount: 1000 })
+    }
+  }
+}));
+
+// Import after mock
+const { verifyWebhookSignature } = await import('../config/razorpay.js');
+const apiRoutes = (await import('../routes/index.js')).default;
 
 // Setup Mock Express App for testing
 const app = express();
 app.use(express.json());
 app.use('/api', apiRoutes);
-
-jest.mock('../config/razorpay.js', () => ({
-  verifyRazorpaySignature: jest.fn(),
-  razorpay: {
-    orders: {
-      create: jest.fn().mockResolvedValue({ id: 'order_test_123', amount: 1000 })
-    }
-  }
-}));
 
 describe('SkillBridge Pro Backend Tests', () => {
 
@@ -53,7 +57,7 @@ describe('SkillBridge Pro Backend Tests', () => {
 
   describe('Razorpay Webhook Verification', () => {
     it('should reject invalid signature', async () => {
-      (verifyRazorpaySignature as jest.Mock).mockReturnValue(false);
+      (verifyWebhookSignature as jest.Mock).mockReturnValue(false);
 
       const res = await request(app)
         .post('/api/payments/webhook')

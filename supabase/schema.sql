@@ -238,3 +238,115 @@ CREATE TRIGGER update_daily_progress_updated_at
     BEFORE UPDATE ON public.daily_progress
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- PHASE 6: PORTFOLIO & COMMUNITY --
+
+-- 12. Portfolio Projects
+CREATE TABLE public.projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    repository_url TEXT,
+    live_url TEXT,
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'verified', 'rejected')),
+    ai_feedback JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (auth.uid() = user_id OR public.is_admin());
+CREATE POLICY "Public can view verified projects" ON public.projects FOR SELECT USING (status = 'verified' OR public.is_admin());
+
+CREATE TRIGGER update_projects_updated_at
+    BEFORE UPDATE ON public.projects
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 13. Community Threads
+CREATE TABLE public.community_threads (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    tags JSONB DEFAULT '[]'::jsonb,
+    upvotes INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.community_threads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can view community threads" ON public.community_threads FOR SELECT USING (true);
+CREATE POLICY "Users can manage own threads" ON public.community_threads FOR ALL USING (auth.uid() = user_id OR public.is_admin());
+
+-- 14. Community Answers
+CREATE TABLE public.community_answers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    thread_id UUID NOT NULL REFERENCES public.community_threads(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    is_accepted BOOLEAN DEFAULT false,
+    upvotes INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.community_answers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can view community answers" ON public.community_answers FOR SELECT USING (true);
+CREATE POLICY "Users can manage own answers" ON public.community_answers FOR ALL USING (auth.uid() = user_id OR public.is_admin());
+
+-- 15. Community Votes (prevents double voting)
+CREATE TABLE public.community_votes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL, -- references thread_id or answer_id
+    target_type TEXT NOT NULL CHECK (target_type IN ('thread', 'answer')),
+    vote_type TEXT NOT NULL CHECK (vote_type IN ('up', 'down')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    UNIQUE(user_id, target_id)
+);
+
+ALTER TABLE public.community_votes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own votes" ON public.community_votes FOR ALL USING (auth.uid() = user_id OR public.is_admin());
+
+-- PHASE 9: ALGORITHM OPTIMIZATION --
+
+-- Add GIN Index on expertise_tags (assuming we add this column to mentors_profile)
+-- Wait, expertise_tags is not explicitly defined in the original schema for mentors_profile.
+-- Assuming mentors_profile has it as part of a materialized view or we can just define the RPC.
+-- Here we'll create the RPC matching function which maps to active_mentors_mv (assumed to exist).
+
+CREATE OR REPLACE FUNCTION public.match_mentors(p_tags TEXT[], p_budget NUMERIC, p_limit INT)
+RETURNS TABLE (
+    id UUID,
+    verification_status TEXT,
+    rating NUMERIC,
+    hourly_rate NUMERIC,
+    expertise_tags TEXT[],
+    has_availability BOOLEAN,
+    cold_start_boost NUMERIC,
+    matchScore NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        m.id,
+        m.verification_status,
+        m.rating,
+        m.hourly_rate,
+        m.expertise_tags,
+        m.has_availability,
+        m.cold_start_boost,
+        (
+            -- Expertise ratio
+            ( (SELECT COUNT(*) FROM unnest(m.expertise_tags) t WHERE t = ANY(p_tags))::NUMERIC / GREATEST(array_length(p_tags, 1), 1) ) * 0.40
+            + (CASE WHEN m.has_availability THEN 1.0 ELSE 0.0 END) * 0.20
+            + (m.rating / 5.0) * 0.15
+            + (CASE WHEN m.hourly_rate <= p_budget THEN 1.0 ELSE 0.0 END) * 0.10
+            + COALESCE(m.cold_start_boost, 0) * 0.05
+        ) AS matchScore
+    FROM active_mentors_mv m
+    ORDER BY matchScore DESC
+    LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+

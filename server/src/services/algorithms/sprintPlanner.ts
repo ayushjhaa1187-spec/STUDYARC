@@ -11,28 +11,71 @@ export interface TaskPriorityNode {
     priority: { importance: number; difficultyLevel: number };
 }
 
-// Simple Priority Queue for Tasks
 class TaskPriorityQueue {
     private items: TaskPriorityNode[] = [];
 
     // Importance (desc), then Difficulty (asc)
+    private compare(a: TaskPriorityNode, b: TaskPriorityNode): number {
+        if (a.priority.importance !== b.priority.importance) {
+            return b.priority.importance - a.priority.importance; // Descending
+        }
+        return a.priority.difficultyLevel - b.priority.difficultyLevel; // Ascending
+    }
+
     public push(task: TaskNode) {
         const difficultyLevel = task.difficulty === 'easy' ? 1 : task.difficulty === 'medium' ? 2 : 3;
-        this.items.push({ task, priority: { importance: task.importance, difficultyLevel } });
-        this.items.sort((a, b) => {
-            if (a.priority.importance !== b.priority.importance) {
-                return b.priority.importance - a.priority.importance; // Descending
-            }
-            return a.priority.difficultyLevel - b.priority.difficultyLevel; // Ascending
-        });
+        const node: TaskPriorityNode = { task, priority: { importance: task.importance, difficultyLevel } };
+        
+        this.items.push(node);
+        this.bubbleUp(this.items.length - 1);
     }
 
     public pop(): TaskNode | undefined {
-        return this.items.shift()?.task;
+        if (this.isEmpty()) return undefined;
+        if (this.items.length === 1) return this.items.pop()?.task;
+        
+        const top = this.items[0];
+        this.items[0] = this.items.pop()!;
+        this.bubbleDown(0);
+        return top.task;
     }
 
     public isEmpty(): boolean {
         return this.items.length === 0;
+    }
+
+    private bubbleUp(index: number) {
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if (this.compare(this.items[parentIndex], this.items[index]) <= 0) break;
+            
+            // Swap
+            [this.items[parentIndex], this.items[index]] = [this.items[index], this.items[parentIndex]];
+            index = parentIndex;
+        }
+    }
+
+    private bubbleDown(index: number) {
+        const length = this.items.length;
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let smallest = index;
+
+            if (leftChildIndex < length && this.compare(this.items[leftChildIndex], this.items[smallest]) < 0) {
+                smallest = leftChildIndex;
+            }
+
+            if (rightChildIndex < length && this.compare(this.items[rightChildIndex], this.items[smallest]) < 0) {
+                smallest = rightChildIndex;
+            }
+
+            if (smallest === index) break;
+
+            // Swap
+            [this.items[index], this.items[smallest]] = [this.items[smallest], this.items[index]];
+            index = smallest;
+        }
     }
 }
 
