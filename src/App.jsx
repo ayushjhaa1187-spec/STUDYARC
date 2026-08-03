@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useLenis } from 'lenis/react';
+
+// Layout
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import DiagnosticModal from './components/DiagnosticModal';
-import MentorModal from './components/MentorModal';
 import Footer from './components/Footer';
 
+// Global Modals
+import DiagnosticModal from './components/DiagnosticModal';
+import MentorModal from './components/MentorModal';
+import CartCheckoutModal from './components/CartCheckoutModal';
+import ChatbotWidget from './components/ChatbotWidget';
+
+// Skeleton loaders
+import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
+
+// Pages
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import JourneysPage from './pages/JourneysPage';
 import WorkspacePage from './pages/WorkspacePage';
-import MentorsPage from './pages/MentorsPage';
 import PortfolioPage from './pages/PortfolioPage';
 import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
@@ -19,12 +28,17 @@ import AdminDashboard from './pages/AdminDashboard';
 import GenericPage from './pages/GenericPage';
 import CoursesPage from './pages/CoursesPage';
 
-import ChatbotWidget from './components/ChatbotWidget';
-import CartCheckoutModal from './components/CartCheckoutModal';
+// New Pages
+import CatalogPage from './pages/CatalogPage';
+import CourseDetailPage from './pages/CourseDetailPage';
+import LearnWorkspacePage from './pages/LearnWorkspacePage';
+import ExpertsPage from './pages/ExpertsPage';
+import ExpertProfilePage from './pages/ExpertProfilePage';
+import BookingPage from './pages/BookingPage';
 
-import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
+// Hooks & Data
 import { useNetworkStatus } from './hooks/useNetworkStatus';
-import { INITIAL_USER, INITIAL_MENTOR_USER, INITIAL_ADMIN_USER, MENTORS, DAILY_TASKS } from './data/mockData';
+import { INITIAL_USER, INITIAL_MENTOR_USER, INITIAL_ADMIN_USER, EXPERTS, DAILY_TASKS } from './data/mockData';
 
 export default function App() {
   const [activePage, setActivePage] = useState('/');
@@ -35,26 +49,23 @@ export default function App() {
   const [sprintTasks, setSprintTasks] = useState(DAILY_TASKS);
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Route params (simulating URL params without React Router)
+  const [routeParams, setRouteParams] = useState({});
+
   const lenis = useLenis();
-  const { 
-    isSlowConnection, 
-    simulatedSlow, 
-    setSimulatedSlow, 
-    triggerSimulatedLoad 
-  } = useNetworkStatus();
+  const { isSlowConnection, simulatedSlow, setSimulatedSlow, triggerSimulatedLoad } = useNetworkStatus();
 
-
-  // Handle smooth page switching with skeleton transition if network is slow
-  const handlePageChange = (newPage) => {
+  // Navigate with optional params
+  const handlePageChange = (newPage, params = {}) => {
     triggerSimulatedLoad(isSlowConnection ? 1200 : 300);
     setActivePage(newPage);
-    if (lenis) {
-      lenis.scrollTo(0, { immediate: true });
-    }
+    setRouteParams(params);
+    if (lenis) lenis.scrollTo(0, { immediate: true });
   };
 
   const openMentorModal = (mentor = null) => {
-    setSelectedMentor(mentor || MENTORS[0]);
+    setSelectedMentor(mentor || EXPERTS[0]);
   };
 
   const handleDiagnosticComplete = (result) => {
@@ -64,8 +75,6 @@ export default function App() {
       role: result.targetRole,
       sprintName: result.recommendedJourney
     }));
-    
-    // Generate Sprint Tasks based on Gap Analysis
     const generatedTasks = result.gapAnalysis.map((gap, idx) => ({
       id: 100 + idx,
       title: 'Address Gap: ' + gap.replace(/\.$/, ''),
@@ -75,21 +84,28 @@ export default function App() {
       completed: false,
       dueTime: 'Today'
     }));
-    
-    // Use generated tasks + mock tasks for fullness
     setSprintTasks([...generatedTasks, ...DAILY_TASKS.slice(1)]);
-    
     handlePageChange('/dashboard');
   };
 
   const isLanding = activePage === '/';
   const isAuth = activePage === '/login';
 
+  // Pages that use the full app shell
+  const FOOTER_PAGES = ['/features', '/pricing', '/marketplace', '/blog', '/guides', '/success-stories', '/help', '/about', '/careers', '/privacy', '/terms'];
+  const isGenericPage = FOOTER_PAGES.includes(activePage);
+
+  const getSkeletonForPage = () => {
+    if (activePage === '/dashboard') return <DashboardSkeleton />;
+    if (activePage === '/community') return <FeedSkeleton />;
+    return <GridSkeleton count={6} />;
+  };
+
   return (
     <div className="min-h-screen bg-bright-bg text-slate-100 font-sans selection:bg-brand-cyan selection:text-black">
-      
-      {/* Global Top Header Navbar */}
-      {!isLanding && (
+
+      {/* Global Top Navbar — hidden on landing + auth */}
+      {!isLanding && !isAuth && (
         <Navbar
           activePage={activePage}
           setActivePage={handlePageChange}
@@ -103,8 +119,7 @@ export default function App() {
       )}
 
       <div className="flex">
-        
-        {/* Sidebar Navigation for app routes */}
+        {/* Sidebar — shown on inner app pages */}
         {!isLanding && !isAuth && (
           <Sidebar
             activePage={activePage}
@@ -116,25 +131,20 @@ export default function App() {
           />
         )}
 
-        {/* Main Route Content View */}
+        {/* Main Content */}
         <main
-          className={`flex-1 transition-all duration-300 p-4 sm:p-6 lg:p-8 ${
-            !isLanding && !isAuth ? (isSidebarCollapsed ? 'md:ml-16' : 'md:ml-64') : 'mx-auto max-w-7xl'
+          className={`flex-1 transition-all duration-300 ${
+            isLanding || isAuth
+              ? 'w-full'
+              : `${isSidebarCollapsed ? 'md:ml-16' : 'md:ml-64'} p-4 sm:p-6 lg:p-8`
           }`}
         >
-          {/* SKELETON UI UX FOR SLOW INTERNET / LOADING */}
-          {isSlowConnection ? (
-            <div className="space-y-6">
-              {activePage === '/dashboard' && <DashboardSkeleton />}
-              {activePage === '/community' && <FeedSkeleton />}
-              {(activePage === '/journeys' || activePage === '/mentors' || activePage === '/portfolio') && <GridSkeleton count={6} />}
-              {activePage === '/' && <DashboardSkeleton />}
-              {activePage === '/challenges' && <GridSkeleton count={3} />}
-              {activePage === '/settings' && <DashboardSkeleton />}
-              {activePage === '/login' && <GridSkeleton count={2} />}
-            </div>
+          {/* Slow network skeleton */}
+          {isSlowConnection && !isLanding && !isAuth ? (
+            <div className="space-y-6">{getSkeletonForPage()}</div>
           ) : (
             <>
+              {/* ── Landing ── */}
               {activePage === '/' && (
                 <LandingPage
                   setActivePage={handlePageChange}
@@ -142,6 +152,7 @@ export default function App() {
                 />
               )}
 
+              {/* ── Auth ── */}
               {activePage === '/login' && (
                 <AuthPage
                   onLoginSuccess={(userData) => {
@@ -154,6 +165,7 @@ export default function App() {
                 />
               )}
 
+              {/* ── Dashboard ── */}
               {activePage === '/dashboard' && (
                 <DashboardPage
                   user={user}
@@ -165,45 +177,104 @@ export default function App() {
                 />
               )}
 
-              {activePage === '/journeys' && (
-                <JourneysPage setActivePage={handlePageChange} />
+              {/* ── Course Catalog ── */}
+              {activePage === '/catalog' && (
+                <CatalogPage setActivePage={handlePageChange} />
               )}
 
+              {/* ── Course Detail ── */}
+              {activePage === '/course' && (
+                <CourseDetailPage
+                  courseId={routeParams.courseId}
+                  setActivePage={handlePageChange}
+                  openMentorModal={openMentorModal}
+                />
+              )}
+
+              {/* ── Learning Workspace ── */}
+              {activePage === '/learn' && (
+                <LearnWorkspacePage
+                  courseId={routeParams.courseId}
+                  setActivePage={handlePageChange}
+                  openMentorModal={openMentorModal}
+                />
+              )}
+
+              {/* ── Legacy Courses (keep for compatibility) ── */}
               {activePage === '/courses' && (
                 <CoursesPage cart={cart} setCart={setCart} />
               )}
 
+              {/* ── Journeys ── */}
+              {activePage === '/journeys' && (
+                <JourneysPage setActivePage={handlePageChange} />
+              )}
+
+              {/* ── Sprint Workspace (Challenges) ── */}
               {activePage === '/challenges' && (
-                <WorkspacePage 
+                <WorkspacePage
                   tasks={sprintTasks}
                   setTasks={setSprintTasks}
                   user={user}
                 />
               )}
 
+              {/* ── Experts Marketplace ── */}
+              {activePage === '/experts' && (
+                <ExpertsPage
+                  setActivePage={handlePageChange}
+                  openMentorModal={openMentorModal}
+                />
+              )}
+
+              {/* ── Legacy Mentors (redirect to experts) ── */}
               {activePage === '/mentors' && (
-                <MentorsPage openMentorModal={openMentorModal} />
+                <ExpertsPage
+                  setActivePage={handlePageChange}
+                  openMentorModal={openMentorModal}
+                />
               )}
 
+              {/* ── Expert Profile ── */}
+              {activePage === '/expert-profile' && (
+                <ExpertProfilePage
+                  expertId={routeParams.expertId}
+                  setActivePage={handlePageChange}
+                />
+              )}
+
+              {/* ── Booking Flow ── */}
+              {activePage === '/booking' && (
+                <BookingPage
+                  expertId={routeParams.expertId}
+                  serviceId={routeParams.serviceId}
+                  setActivePage={handlePageChange}
+                />
+              )}
+
+              {/* ── Portfolio ── */}
               {activePage === '/portfolio' && (
-                <PortfolioPage />
+                <PortfolioPage user={user} setActivePage={handlePageChange} />
               )}
 
+              {/* ── Community ── */}
               {activePage === '/community' && (
-                <CommunityPage openMentorModal={openMentorModal} />
+                <CommunityPage openMentorModal={openMentorModal} setActivePage={handlePageChange} />
               )}
 
+              {/* ── Settings ── */}
               {activePage === '/settings' && (
                 <SettingsPage user={user} setUser={setUser} />
               )}
 
+              {/* ── Admin ── */}
               {activePage === '/admin' && (
-                <AdminDashboard />
+                <AdminDashboard setActivePage={handlePageChange} />
               )}
 
-              {/* Missing Footer Pages */}
-              {['/features', '/pricing', '/marketplace', '/blog', '/guides', '/success-stories', '/help', '/about', '/careers', '/privacy', '/terms'].includes(activePage) && (
-                <GenericPage 
+              {/* ── Generic footer pages ── */}
+              {isGenericPage && (
+                <GenericPage
                   title={
                     activePage === '/features' ? 'Features' :
                     activePage === '/pricing' ? 'Pricing' :
@@ -216,18 +287,19 @@ export default function App() {
                     activePage === '/careers' ? 'Careers' :
                     activePage === '/privacy' ? 'Privacy Policy' :
                     'Terms of Service'
-                  } 
-                  setActivePage={handlePageChange} 
+                  }
+                  setActivePage={handlePageChange}
                 />
               )}
             </>
           )}
         </main>
       </div>
-      
-      {!isLanding && <Footer setActivePage={setActivePage} />}
 
-      {/* Global Interactive Modals */}
+      {/* Footer */}
+      {!isLanding && !isAuth && <Footer setActivePage={handlePageChange} />}
+
+      {/* Global Modals */}
       <DiagnosticModal
         isOpen={isDiagnosticOpen}
         onClose={() => setIsDiagnosticOpen(false)}
@@ -249,9 +321,8 @@ export default function App() {
         setCart={setCart}
       />
 
-      {/* Global Support Chatbot */}
+      {/* Floating AI Chatbot */}
       <ChatbotWidget />
-
     </div>
   );
 }
