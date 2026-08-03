@@ -61,13 +61,13 @@ export const handleWebhook = async (req, res) => {
         }
         const event = req.body;
         const webhookEventId = req.headers['x-razorpay-event-id'] || event.event_id || Date.now().toString();
-        // Idempotency check: check if webhook_event_id is already processed
-        const { data: existingEvent } = await supabaseAdmin
-            .from('expert_bookings')
+        // Idempotency check: check if webhook_event_id is already processed in payments
+        const { data: existingPayment } = await supabaseAdmin
+            .from('payments')
             .select('id')
-            .eq('webhook_event_id', webhookEventId)
+            .eq('metadata->>webhook_event_id', webhookEventId)
             .single();
-        if (existingEvent) {
+        if (existingPayment) {
             return res.json({ success: true, message: 'Already processed' });
         }
         if (event.event === 'payment.captured') {
@@ -79,30 +79,30 @@ export const handleWebhook = async (req, res) => {
             if (bookingId) {
                 // Enforce strong idempotency at the database level by ensuring we only update if not already paid
                 const { data: updatedBooking, error: updateError } = await supabaseAdmin
-                    .from('expert_bookings')
+                    .from('mentor_bookings')
                     .update({
-                    payment_status: 'paid',
-                    status: 'scheduled',
-                    razorpay_payment_id,
-                    webhook_event_id: webhookEventId
+                    status: 'confirmed',
+                    payment_id: razorpay_payment_id
                 })
                     .eq('id', bookingId)
-                    .neq('payment_status', 'paid')
+                    .eq('status', 'pending_payment')
                     .select()
                     .single();
                 // If updatedBooking is null, it means it was already processed or not found
                 if (updatedBooking && !updateError) {
-                    // Audit Log
+                    // Update Payment Log
                     await supabaseAdmin
-                        .from('payment_audit_logs')
-                        .insert({
-                        booking_id: bookingId,
-                        razorpay_order_id,
-                        razorpay_payment_id,
-                        webhook_event_id: webhookEventId,
-                        event_type: event.event,
-                        status: 'success'
-                    });
+                        .from('payments')
+                        .update({
+                        status: 'paid',
+                        provider_payment_id: razorpay_payment_id,
+                        metadata: {
+                            booking_id: bookingId,
+                            webhook_event_id: webhookEventId,
+                            event_type: event.event
+                        }
+                    })
+                        .eq('provider_order_id', razorpay_order_id);
                     // Outbox Pattern: Insert job for post-payment side effects (emails, payouts)
                     await supabaseAdmin
                         .from('job_queue')

@@ -13,15 +13,19 @@ jest.unstable_mockModule('../config/razorpay.js', () => ({
 }));
 // Import after mock
 const { verifyWebhookSignature } = await import('../config/razorpay.js');
-const apiRoutes = (await import('../routes/index.js')).default;
+const diagnosticsRouter = (await import('../routes/diagnostics.js')).default;
+const webhooksRouter = (await import('../routes/webhooks.js')).default;
+const authRouter = (await import('../routes/auth.js')).default;
 // Setup Mock Express App for testing
 const app = express();
 app.use(express.json());
-app.use('/api', apiRoutes);
+app.use('/api/me', authRouter);
+app.use('/api', diagnosticsRouter);
+app.use('/api/webhooks', webhooksRouter);
 describe('SkillBridge Pro Backend Tests', () => {
     describe('Auth & RLS Isolation', () => {
         it('should reject requests without Auth header', async () => {
-            const res = await request(app).get('/api/users/me');
+            const res = await request(app).get('/api/me');
             expect(res.status).toBe(401);
             expect(res.body.error).toBe('Missing or invalid authorization header');
         });
@@ -51,7 +55,7 @@ describe('SkillBridge Pro Backend Tests', () => {
         it('should reject invalid signature', async () => {
             verifyWebhookSignature.mockReturnValue(false);
             const res = await request(app)
-                .post('/api/payments/webhook')
+                .post('/api/webhooks/razorpay')
                 .send({
                 razorpay_order_id: 'order_123',
                 razorpay_payment_id: 'pay_123',

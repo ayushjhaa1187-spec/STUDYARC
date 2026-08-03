@@ -3,30 +3,25 @@ import { AiService } from './aiService.js';
 import { calculateReadinessScore } from './algorithms/careerReadiness.js';
 export class DiagnosticService {
     static async processDiagnostic(userId, targetRole, weeklyHours, skills, experienceLevel) {
-        // Step 1: Insert pending assessment
-        const { data: assessment, error } = await supabaseAdmin
-            .from('assessments')
+        // Step 1: Insert pending assessment record
+        const { data: diagnostic, error } = await supabaseAdmin
+            .from('diagnostic_results')
             .insert({
             user_id: userId,
             target_role: targetRole,
-            weekly_hours: weeklyHours,
-            skills: JSON.stringify(skills),
-            readiness_score: 0,
-            recommended_journey: '',
-            gap_analysis: '{}',
-            status: 'pending'
+            input_snapshot: { skills, weeklyHours, experienceLevel }
         })
             .select()
             .single();
         if (error)
             throw error;
-        // Step 2: Insert into job_queue (Outbox Pattern)
+        // Step 2: Insert into job_queue
         const { error: jobError } = await supabaseAdmin
             .from('job_queue')
             .insert({
             type: 'ai_generation',
             payload: {
-                assessmentId: assessment.id,
+                diagnosticId: diagnostic.id,
                 userId,
                 targetRole,
                 weeklyHours,
@@ -36,10 +31,9 @@ export class DiagnosticService {
         });
         if (jobError)
             throw jobError;
-        return assessment;
+        return diagnostic;
     }
-    // To be called by the Background Worker
-    static async processDiagnosticJob(assessmentId, userId, targetRole, weeklyHours, skills, experienceLevel) {
+    static async processDiagnosticJob(diagnosticId, userId, targetRole, weeklyHours, skills, experienceLevel) {
         const aiAnalysis = await AiService.evaluateProfile(targetRole, weeklyHours, skills, experienceLevel);
         const metrics = {
             avgAssessed: 0,
@@ -53,44 +47,39 @@ export class DiagnosticService {
             resumeCompletenessScore: 0
         };
         const { total: calculatedScore, breakdown } = calculateReadinessScore(metrics);
-        // Update assessment to completed
-        const { data: assessment, error } = await supabaseAdmin
-            .from('assessments')
+        // Update diagnostic_results to completed state
+        const { data: diagnostic, error } = await supabaseAdmin
+            .from('diagnostic_results')
             .update({
             readiness_score: calculatedScore,
-            recommended_journey: aiAnalysis.recommendedJourney,
-            gap_analysis: JSON.stringify(aiAnalysis.gapAnalysis),
-            ai_output: aiAnalysis,
-            status: 'completed'
+            recommended_next_steps: aiAnalysis.gapAnalysis,
+            generated_plan: aiAnalysis,
+            model_name: 'gemini-pro'
         })
-            .eq('id', assessmentId)
+            .eq('id', diagnosticId)
             .select()
             .single();
         if (error)
             throw error;
-        // Persist a snapshot
+        // Update readiness score on learner_profiles directly
         await supabaseAdmin
-            .from('career_readiness_snapshots')
-            .insert({
+            .from('learner_profiles')
+            .upsert({
             user_id: userId,
-            total_score: calculatedScore,
-            tech_score: breakdown.techScore,
-            project_score: breakdown.projectScore,
-            journey_score: breakdown.journeyScore,
-            streak_score: breakdown.streakScore,
-            evidence_score: breakdown.evidenceScore,
-            trigger_event: 'diagnostic_completed'
-        });
+            readiness_score: calculatedScore,
+            target_role: targetRole
+        }, { onConflict: 'user_id' });
         // Audit log for Agent decision
         await supabaseAdmin
-            .from('agent_decision_audit_logs')
+            .from('agent_events')
             .insert({
-            assessment_id: assessmentId,
             user_id: userId,
-            action_type: 'diagnostic_evaluation',
-            input_payload: { targetRole, weeklyHours, skills, experienceLevel },
-            ai_output: aiAnalysis
+            agent_type: 'diagnostic',
+            event_type: 'diagnostic_evaluation',
+            input_summary: { targetRole, weeklyHours, skills, experienceLevel },
+            output_summary: aiAnalysis,
+            status: 'completed'
         });
-        return assessment;
+        return diagnostic;
     }
 }
