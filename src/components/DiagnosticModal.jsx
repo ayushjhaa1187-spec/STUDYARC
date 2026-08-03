@@ -194,55 +194,62 @@ export default function DiagnosticModal({ isOpen, onClose, onComplete }) {
           </div>
         )}
 
-        {/* Step 3: Skill Checklist */}
+        {/* Step 3: Skill Checklist & Analysis State */}
         {step === 3 && (
           <div className="mt-6 space-y-4">
-            <p className="text-sm text-slate-300">Select skills you have already built projects with:</p>
-            <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1">
-              {skillOptions.map((skill) => {
-                const selected = selectedSkills.includes(skill);
-                return (
+            {isAnalyzing ? (
+              <div className="space-y-4 animate-pulse">
+                <div className="h-6 w-3/4 bg-slate-800 rounded"></div>
+                <div className="h-24 w-full bg-slate-800 rounded-xl"></div>
+                <div className="flex space-x-4 mt-4">
+                  <div className="h-10 w-1/3 bg-slate-800 rounded-xl"></div>
+                  <div className="h-10 w-1/3 bg-slate-800 rounded-xl"></div>
+                </div>
+                <div className="flex items-center justify-center mt-6 text-emerald-400 font-mono text-xs">
+                  <Zap className="h-4 w-4 animate-spin mr-2" />
+                  Analyzing Profile & Generating Custom Journey...
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-slate-300">Select skills you have already built projects with:</p>
+                <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1">
+                  {skillOptions.map((skill) => {
+                    const selected = selectedSkills.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        onClick={() => toggleSkill(skill)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition border ${
+                          selected
+                            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
+                            : 'border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700'
+                        }`}
+                      >
+                        {selected ? '✓ ' : '+ '}{skill}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 flex justify-between items-center">
                   <button
-                    key={skill}
-                    onClick={() => toggleSkill(skill)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition border ${
-                      selected
-                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                        : 'border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700'
-                    }`}
+                    onClick={() => setStep(2)}
+                    className="px-4 py-2 text-sm text-slate-400 hover:text-white"
                   >
-                    {selected ? '✓ ' : '+ '}{skill}
+                    Back
                   </button>
-                );
-              })}
-            </div>
 
-            <div className="mt-6 flex justify-between items-center">
-              <button
-                onClick={() => setStep(2)}
-                className="px-4 py-2 text-sm text-slate-400 hover:text-white"
-              >
-                Back
-              </button>
-
-              <button
-                onClick={runAnalysis}
-                disabled={isAnalyzing}
-                className="flex items-center space-x-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:opacity-95 shadow-md shadow-emerald-500/20 disabled:opacity-50"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Zap className="h-4 w-4 animate-spin" />
-                    <span>Analyzing Code Repos & Skills...</span>
-                  </>
-                ) : (
-                  <>
+                  <button
+                    onClick={runAnalysis}
+                    className="flex items-center space-x-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:opacity-95 shadow-md shadow-emerald-500/20"
+                  >
                     <Sparkles className="h-4 w-4" />
                     <span>Run AI Diagnostic</span>
-                  </>
-                )}
-              </button>
-            </div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

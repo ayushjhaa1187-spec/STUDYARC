@@ -8,6 +8,10 @@ export const chatWithCoach = async (req: AuthRequest, res: Response) => {
     const userId = req.user.id;
     const { message, sprintId } = req.body;
 
+    if (!message || message.length > 1000) {
+      return res.status(400).json({ error: 'Message is too long or empty' });
+    }
+
     // Fetch previous chat history
     let chatHistory: { role: 'user' | 'model', parts: { text: string }[] }[] = [];
     if (sprintId) {

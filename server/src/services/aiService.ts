@@ -1,4 +1,5 @@
 import { SchemaType, Schema } from '@google/generative-ai';
+import { z } from 'zod';
 import { geminiPro } from '../config/gemini.js';
 
 export class AiService {
@@ -26,7 +27,7 @@ export class AiService {
             properties: {
               skill: { type: SchemaType.STRING },
               gap: { type: SchemaType.STRING },
-              priority: { type: SchemaType.STRING, enum: ["high", "medium", "low"] }
+              priority: { type: SchemaType.STRING, format: 'enum', enum: ["high", "medium", "low"] }
             },
             required: ["skill", "gap", "priority"]
           }
@@ -44,6 +45,19 @@ export class AiService {
     });
 
     const text = result.response.text();
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+
+    // Validate using Zod
+    const AiOutputSchema = z.object({
+      readinessScore: z.number().min(0).max(100),
+      recommendedJourney: z.string(),
+      gapAnalysis: z.array(z.object({
+        skill: z.string(),
+        gap: z.string(),
+        priority: z.enum(["high", "medium", "low"])
+      }))
+    });
+
+    return AiOutputSchema.parse(parsed);
   }
 }

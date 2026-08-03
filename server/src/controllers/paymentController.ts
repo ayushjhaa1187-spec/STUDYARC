@@ -1,66 +1,49 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifyRazorpaySignature } from '../config/razorpay.js';
+import { verifyWebhookSignature } from '../config/razorpay.js';
 
 export const handleWebhook = async (req: Request, res: Response) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const signature = req.headers['x-razorpay-signature'] as string;
+    const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
-    const isValid = verifyRazorpaySignature(
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature
-    );
-
-    if (!isValid) {
+    if (!signature || !verifyWebhookSignature(rawBody, signature)) {
       return res.status(400).json({ error: 'Invalid signature' });
     }
 
-    // Idempotency check: fetch existing payment
-    const { data: existingPayment, error: fetchError } = await supabaseAdmin
-      .from('payments')
-      .select('status')
-      .eq('razorpay_order_id', razorpay_order_id)
+    const event = req.body;
+    const webhookEventId = req.headers['x-razorpay-event-id'] as string || event.event_id || Date.now().toString();
+
+    // Idempotency check: check if webhook_event_id is already processed
+    const { data: existingEvent } = await supabaseAdmin
+      .from('expert_bookings')
+      .select('id')
+      .eq('webhook_event_id', webhookEventId)
       .single();
 
-    if (fetchError || !existingPayment) {
-      return res.status(404).json({ error: 'Payment record not found' });
+    if (existingEvent) {
+      return res.json({ success: true, message: 'Already processed' });
     }
 
-    if (existingPayment.status === 'captured') {
-      return res.json({ success: true, message: 'Webhook already processed' });
+    if (event.event === 'payment.captured') {
+      const paymentEntity = event.payload.payment.entity;
+      const razorpay_order_id = paymentEntity.order_id;
+      const razorpay_payment_id = paymentEntity.id;
+      // Notes usually contains our metadata
+      const bookingId = paymentEntity.notes?.booking_id;
+
+      if (bookingId) {
+        await supabaseAdmin
+          .from('expert_bookings')
+          .update({ 
+            payment_status: 'paid', 
+            status: 'scheduled',
+            razorpay_payment_id,
+            webhook_event_id: webhookEventId
+          })
+          .eq('id', bookingId);
+      }
     }
-
-    // Update payment record
-    const { data: payment, error: paymentError } = await supabaseAdmin
-      .from('payments')
-      .update({
-        razorpay_payment_id,
-        razorpay_signature,
-        status: 'captured'
-      })
-      .eq('razorpay_order_id', razorpay_order_id)
-      .select()
-      .single();
-
-    if (paymentError) throw paymentError;
-
-    // Update booking status
-    if (payment && payment.booking_id) {
-      await supabaseAdmin
-        .from('expert_bookings')
-        .update({ payment_status: 'paid', status: 'scheduled' })
-        .eq('id', payment.booking_id);
-    }
-
-    // Log the event for XP/Audit
-    await supabaseAdmin
-      .from('user_activities')
-      .insert({
-        user_id: payment.user_id,
-        event_type: 'payment_captured',
-        metadata: { amount: payment.amount, order_id: razorpay_order_id }
-      });
 
     res.json({ success: true });
   } catch (error: any) {
