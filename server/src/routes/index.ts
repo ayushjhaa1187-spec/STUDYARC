@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getMe } from '../controllers/authController.js';
 import { evaluateDiagnostic } from '../controllers/diagnosticController.js';
-import { getActiveSprints, completeTask } from '../controllers/sprintController.js';
+import { getActiveSprints, completeTask, markDayComplete } from '../controllers/sprintController.js';
 import { chatWithCoach } from '../controllers/coachController.js';
 import { submitPortfolio } from '../controllers/portfolioController.js';
 import { getMentors, createBooking } from '../controllers/bookingController.js';
@@ -21,6 +21,7 @@ router.get('/users/me', requireAuth, getMe);
 router.post('/diagnostic/evaluate', requireAuth, validateRequest(schemas.DiagnosticEvaluationSchema), evaluateDiagnostic);
 router.get('/sprints/active', requireAuth, getActiveSprints);
 router.post('/sprints/:sprintId/tasks/:taskId/complete', requireAuth, validateRequest(schemas.TaskCompletionSchema), completeTask);
+router.post('/sprints/daily-progress', requireAuth, markDayComplete);
 
 // AI Coach & Portfolio
 router.post('/coach/chat', requireAuth, validateRequest(schemas.ChatMessageSchema), chatWithCoach);

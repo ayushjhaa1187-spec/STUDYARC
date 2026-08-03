@@ -2,15 +2,19 @@ import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.js';
 import { supabaseAdmin } from '../config/supabase.js';
 import { razorpay } from '../config/razorpay.js';
+import { MentorService } from '../services/mentorService.js';
 
 export const getMentors = async (req: AuthRequest, res: Response) => {
   try {
-    const { data: mentors, error } = await supabaseAdmin
-      .from('mentors_profile')
-      .select('*, users(full_name, avatar_url)')
-      .eq('verification_status', 'verified');
-
-    if (error) throw error;
+    const { skills } = req.query;
+    
+    if (skills) {
+      const requestedSkills = (skills as string).split(',');
+      const matches = await MentorService.getMatches(requestedSkills);
+      return res.json(matches);
+    }
+    
+    const mentors = await MentorService.getVerifiedMentors();
     res.json(mentors);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch mentors', details: error.message });

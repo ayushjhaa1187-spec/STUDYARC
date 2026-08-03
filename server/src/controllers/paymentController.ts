@@ -16,6 +16,21 @@ export const handleWebhook = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid signature' });
     }
 
+    // Idempotency check: fetch existing payment
+    const { data: existingPayment, error: fetchError } = await supabaseAdmin
+      .from('payments')
+      .select('status')
+      .eq('razorpay_order_id', razorpay_order_id)
+      .single();
+
+    if (fetchError || !existingPayment) {
+      return res.status(404).json({ error: 'Payment record not found' });
+    }
+
+    if (existingPayment.status === 'captured') {
+      return res.json({ success: true, message: 'Webhook already processed' });
+    }
+
     // Update payment record
     const { data: payment, error: paymentError } = await supabaseAdmin
       .from('payments')

@@ -49,3 +49,17 @@ export const completeTask = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to complete task', details: error.message });
   }
 };
+
+import { SprintService } from '../services/sprintService.js';
+
+export const markDayComplete = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const { sprintId, day } = req.body;
+
+    const progress = await SprintService.markDayCompleted(userId, sprintId, day);
+    res.json({ success: true, progress });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to update daily progress', details: error.message });
+  }
+};

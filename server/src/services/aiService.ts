@@ -1,4 +1,4 @@
-import { SchemaType } from '@google/generative-ai';
+import { SchemaType, Schema } from '@google/generative-ai';
 import { geminiPro } from '../config/gemini.js';
 
 export class AiService {
@@ -14,7 +14,7 @@ export class AiService {
       Provide a comprehensive diagnostic evaluation for this student to get an internship or job.
     `;
 
-    const schema = {
+    const schema: Schema = {
       type: SchemaType.OBJECT,
       properties: {
         readinessScore: { type: SchemaType.INTEGER, description: "A score from 0 to 100 indicating readiness" },
