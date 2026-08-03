@@ -35,7 +35,8 @@ export const handleWebhook = async (req: Request, res: Response) => {
       const bookingId = paymentEntity.notes?.booking_id;
 
       if (bookingId) {
-        await supabaseAdmin
+        // Enforce strong idempotency at the database level by ensuring we only update if not already paid
+        const { data: updatedBooking, error: updateError } = await supabaseAdmin
           .from('expert_bookings')
           .update({ 
             payment_status: 'paid', 
@@ -43,7 +44,29 @@ export const handleWebhook = async (req: Request, res: Response) => {
             razorpay_payment_id,
             webhook_event_id: webhookEventId
           })
-          .eq('id', bookingId);
+          .eq('id', bookingId)
+          .neq('payment_status', 'paid')
+          .select()
+          .single();
+
+        // If updatedBooking is null, it means it was already processed or not found
+        if (updatedBooking && !updateError) {
+          // Outbox Pattern: Insert job for post-payment side effects (emails, payouts)
+          await supabaseAdmin
+            .from('job_queue')
+            .insert({
+              type: 'payment_success',
+              payload: {
+                bookingId,
+                razorpay_order_id,
+                razorpay_payment_id,
+                amount: paymentEntity.amount
+              }
+            });
+        } else if (updateError && updateError.code !== 'PGRST116') {
+          // PGRST116 is 0 rows returned, meaning it was already updated
+          throw updateError;
+        }
       }
     }
 

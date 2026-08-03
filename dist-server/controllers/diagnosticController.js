@@ -1,4 +1,5 @@
 import { DiagnosticService } from '../services/diagnosticService.js';
+import { logger } from '../utils/logger.js';
 export const evaluateDiagnostic = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -7,7 +8,7 @@ export const evaluateDiagnostic = async (req, res) => {
         res.json({ success: true, assessment });
     }
     catch (error) {
-        console.error('Diagnostic Evaluation Error:', error);
+        logger.error('Diagnostic Evaluation Error:', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to process diagnostic', details: error.message });
     }
 };

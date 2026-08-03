@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.js';
 import { DiagnosticService } from '../services/diagnosticService.js';
+import { logger } from '../utils/logger.js';
 
 export const evaluateDiagnostic = async (req: AuthRequest, res: Response) => {
   try {
@@ -18,7 +19,7 @@ export const evaluateDiagnostic = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, assessment });
 
   } catch (error: any) {
-    console.error('Diagnostic Evaluation Error:', error);
+    logger.error('Diagnostic Evaluation Error:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to process diagnostic', details: error.message });
   }
 };

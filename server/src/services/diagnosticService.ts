@@ -4,13 +4,52 @@ import { calculateReadinessScore, ReadinessMetrics } from './algorithms/careerRe
 
 export class DiagnosticService {
   static async processDiagnostic(userId: string, targetRole: string, weeklyHours: number, skills: string[], experienceLevel: string) {
+    // Step 1: Insert pending assessment
+    const { data: assessment, error } = await supabaseAdmin
+      .from('assessments')
+      .insert({
+        user_id: userId,
+        target_role: targetRole,
+        weekly_hours: weeklyHours,
+        skills: JSON.stringify(skills),
+        readiness_score: 0,
+        recommended_journey: '',
+        gap_analysis: '{}',
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Step 2: Insert into job_queue (Outbox Pattern)
+    const { error: jobError } = await supabaseAdmin
+      .from('job_queue')
+      .insert({
+        type: 'ai_generation',
+        payload: {
+          assessmentId: assessment.id,
+          userId,
+          targetRole,
+          weeklyHours,
+          skills,
+          experienceLevel
+        }
+      });
+
+    if (jobError) throw jobError;
+
+    return assessment;
+  }
+
+  // To be called by the Background Worker
+  static async processDiagnosticJob(assessmentId: string, userId: string, targetRole: string, weeklyHours: number, skills: string[], experienceLevel: string) {
     const aiAnalysis = await AiService.evaluateProfile(targetRole, weeklyHours, skills, experienceLevel);
 
-    // Calculate real readiness score instead of trusting AI arbitrary number
     const metrics: ReadinessMetrics = {
-        avgAssessed: 0, // In a real flow, fetch from past assessments if any
+        avgAssessed: 0,
         avgSelfReported: skills.length > 0 ? 50 : 0, 
-        noAssessedSkills: true, // First diagnostic
+        noAssessedSkills: true,
         verifiedProjectsCount: 0,
         uniqueCompletedCoreTasks: 0,
         totalCoreTasks: aiAnalysis.recommendedJourney ? 10 : 0, 
@@ -21,26 +60,23 @@ export class DiagnosticService {
 
     const { total: calculatedScore, breakdown } = calculateReadinessScore(metrics);
 
-    // Insert diagnostic assessment
+    // Update assessment to completed
     const { data: assessment, error } = await supabaseAdmin
       .from('assessments')
-      .insert({
-        user_id: userId,
-        target_role: targetRole,
-        weekly_hours: weeklyHours,
-        skills: JSON.stringify(skills),
+      .update({
         readiness_score: calculatedScore,
         recommended_journey: aiAnalysis.recommendedJourney,
         gap_analysis: JSON.stringify(aiAnalysis.gapAnalysis),
         ai_output: aiAnalysis,
         status: 'completed'
       })
+      .eq('id', assessmentId)
       .select()
       .single();
 
     if (error) throw error;
 
-    // Persist a snapshot using our new DSA architecture table
+    // Persist a snapshot
     await supabaseAdmin
       .from('career_readiness_snapshots')
       .insert({

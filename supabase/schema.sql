@@ -56,6 +56,17 @@ CREATE TABLE public.tasks (
 
 -- ROW LEVEL SECURITY (RLS) POLICIES
 
+-- Secure admin check function
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users 
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Enable RLS on all tables
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.assessments ENABLE ROW LEVEL SECURITY;
@@ -63,27 +74,27 @@ ALTER TABLE public.sprints ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
 -- Users can only read and update their own profile
-CREATE POLICY "Users can view own profile" ON public.users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view own profile" ON public.users FOR SELECT USING (auth.uid() = id OR public.is_admin());
+CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id OR public.is_admin());
 
 -- Users can only manage their own assessments
-CREATE POLICY "Users can view own assessments" ON public.assessments FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own assessments" ON public.assessments FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own assessments" ON public.assessments FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
+CREATE POLICY "Users can insert own assessments" ON public.assessments FOR INSERT WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
 -- Users can only manage their own sprints
-CREATE POLICY "Users can view own sprints" ON public.sprints FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own sprints" ON public.sprints FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own sprints" ON public.sprints FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own sprints" ON public.sprints FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
+CREATE POLICY "Users can insert own sprints" ON public.sprints FOR INSERT WITH CHECK (auth.uid() = user_id OR public.is_admin());
+CREATE POLICY "Users can update own sprints" ON public.sprints FOR UPDATE USING (auth.uid() = user_id OR public.is_admin());
 
 -- Users can only manage tasks within their own sprints
 CREATE POLICY "Users can view own tasks" ON public.tasks FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid()) OR public.is_admin()
 );
 CREATE POLICY "Users can insert own tasks" ON public.tasks FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid()) OR public.is_admin()
 );
 CREATE POLICY "Users can update own tasks" ON public.tasks FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid())
+    EXISTS (SELECT 1 FROM public.sprints WHERE sprints.id = tasks.sprint_id AND sprints.user_id = auth.uid()) OR public.is_admin()
 );
 
 -- PHASE 3: SPRINT DASHBOARD & EXECUTION --
@@ -124,16 +135,16 @@ ALTER TABLE public.daily_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_activities ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can manage own chat history" ON public.chat_history
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id OR public.is_admin())
+  WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
 CREATE POLICY "Users can manage own daily progress" ON public.daily_progress
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id OR public.is_admin())
+  WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
 CREATE POLICY "Users can manage own activities" ON public.user_activities
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id OR public.is_admin())
+  WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
 -- PHASE 4: EXPERT MARKETPLACE --
 
@@ -153,8 +164,8 @@ CREATE TABLE public.expert_bookings (
 );
 
 ALTER TABLE public.expert_bookings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id OR auth.uid() = expert_id);
-CREATE POLICY "Users can insert own bookings" ON public.expert_bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id OR auth.uid() = expert_id OR public.is_admin());
+CREATE POLICY "Users can insert own bookings" ON public.expert_bookings FOR INSERT WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
 -- 9. Mentors Profile Table
 CREATE TABLE public.mentors_profile (
@@ -167,9 +178,9 @@ CREATE TABLE public.mentors_profile (
 );
 
 ALTER TABLE public.mentors_profile ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Mentors can view own profile" ON public.mentors_profile FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Public can view verified mentor profiles" ON public.mentors_profile FOR SELECT USING (verification_status = 'verified');
-CREATE POLICY "Mentors can update own profile" ON public.mentors_profile FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Mentors can view own profile" ON public.mentors_profile FOR SELECT USING (auth.uid() = id OR public.is_admin());
+CREATE POLICY "Public can view verified mentor profiles" ON public.mentors_profile FOR SELECT USING (verification_status = 'verified' OR public.is_admin());
+CREATE POLICY "Mentors can update own profile" ON public.mentors_profile FOR UPDATE USING (auth.uid() = id OR public.is_admin());
 -- Admins will have a bypass policy or use a custom claim to view all mentor profiles.
 
 -- PHASE 5: PAYMENTS & AUDITING --
@@ -186,7 +197,7 @@ CREATE TABLE public.mentor_payouts (
 );
 
 ALTER TABLE public.mentor_payouts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Mentors can view own payouts" ON public.mentor_payouts FOR SELECT USING (auth.uid() = mentor_id);
+CREATE POLICY "Mentors can view own payouts" ON public.mentor_payouts FOR SELECT USING (auth.uid() = mentor_id OR public.is_admin());
 
 -- 11. Audit Logs
 CREATE TABLE public.audit_logs (
@@ -199,7 +210,7 @@ CREATE TABLE public.audit_logs (
 );
 
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
-
+CREATE POLICY "Admins can view audit logs" ON public.audit_logs FOR SELECT USING (public.is_admin());
 -- INDEXES FOR PERFORMANCE
 CREATE INDEX idx_sprints_user_id ON public.sprints(user_id);
 CREATE INDEX idx_tasks_sprint_id ON public.tasks(sprint_id);
