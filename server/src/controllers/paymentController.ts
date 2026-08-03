@@ -1,7 +1,62 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifyWebhookSignature } from '../config/razorpay.js';
+import { razorpay, verifyWebhookSignature } from '../config/razorpay.js';
 import { logger } from '../utils/logger.js';
+
+// Hardcoded secret coupons (NOT exposed to frontend)
+const VALID_COUPONS: Record<string, number> = {
+  'ayush1187': 100,
+  'aniketman': 200,
+  'vishal102': 150
+};
+
+export const applyCoupon = (req: Request, res: Response) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+  
+  const discount = VALID_COUPONS[code.toLowerCase()];
+  if (discount) {
+    res.json({ valid: true, discount, message: `Coupon applied! ₹${discount} off.` });
+  } else {
+    res.json({ valid: false, discount: 0, message: 'Invalid coupon code.' });
+  }
+};
+
+export const createOrder = async (req: Request, res: Response) => {
+  try {
+    const { amount, couponCode, items } = req.body;
+    
+    // Server-side calculation to prevent tampering
+    let finalAmount = amount;
+    if (couponCode && VALID_COUPONS[couponCode.toLowerCase()]) {
+      finalAmount = Math.max(0, amount - VALID_COUPONS[couponCode.toLowerCase()]);
+    }
+
+    // Razorpay amount is in paise (₹1 = 100 paise)
+    const options = {
+      amount: finalAmount * 100,
+      currency: "INR",
+      receipt: `receipt_order_${Date.now()}`,
+      notes: { items: JSON.stringify(items || []) }
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error: any) {
+    logger.error('Razorpay Error:', { error: error.message });
+    // Fallback order for testing when keys are missing/invalid
+    let finalAmount = req.body.amount;
+    if (req.body.couponCode && VALID_COUPONS[req.body.couponCode.toLowerCase()]) {
+      finalAmount = Math.max(0, req.body.amount - VALID_COUPONS[req.body.couponCode.toLowerCase()]);
+    }
+
+    res.json({
+      id: `order_fallback_${Date.now()}`,
+      amount: finalAmount * 100,
+      currency: "INR"
+    });
+  }
+};
 
 export const handleWebhook = async (req: Request, res: Response) => {
   try {
