@@ -24,7 +24,12 @@ export const getMentors = async (req: AuthRequest, res: Response) => {
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
-    const { expertId, slotTime, couponCode } = req.body;
+    const { mentorId, mentorServiceId, scheduledAt, durationMinutes, couponCode, expertId, slotTime } = req.body;
+
+    // Backward compatibility mappings
+    const mId = mentorId || expertId;
+    const sAt = scheduledAt || slotTime;
+    const dur = durationMinutes || 60;
 
     // Hardcoded discount logic for testing (as requested in rules)
     let amount = 1000; // Base ₹1000 per session
@@ -40,14 +45,14 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     // Create pending booking
     const { data: booking, error: bookingError } = await supabaseAdmin
-      .from('expert_bookings')
+      .from('mentor_bookings')
       .insert({
-        user_id: userId,
-        expert_id: expertId,
-        slot_time: slotTime,
-        amount_paid: amount,
-        payment_order_id: order.id,
-        payment_status: 'pending'
+        learner_id: userId,
+        mentor_id: mId,
+        mentor_service_id: mentorServiceId || null, // Might be null if legacy frontend
+        scheduled_at: sAt,
+        duration_minutes: dur,
+        status: 'pending_payment'
       })
       .select()
       .single();
@@ -59,9 +64,13 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       .from('payments')
       .insert({
         user_id: userId,
-        razorpay_order_id: order.id,
-        amount: amount,
-        booking_id: booking.id
+        provider: 'razorpay',
+        provider_order_id: order.id,
+        type: 'mentor_booking',
+        amount_inr: amount,
+        currency: 'INR',
+        status: 'created',
+        metadata: { booking_id: booking.id }
       });
 
     res.json({ order, booking });

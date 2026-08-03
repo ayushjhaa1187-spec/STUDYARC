@@ -5,34 +5,50 @@ import { supabaseAdmin } from '../config/supabase.js';
 export const submitPortfolio = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
-    const { githubUrl, liveDemoUrl } = req.body;
+    const { title, description, githubUrl, liveDemoUrl, projectCategory } = req.body;
 
-    // Based on the new Portfolio Verification State Machine (DSA Architecture)
-    // 1. We create the submission in 'ai_check_queued' state.
-    // 2. An async worker (e.g., Supabase Edge Function with Cloud Tasks) will pick this up,
-    //    run the Gemini AI validation, and move it to 'ai_check_passed' or 'needs_changes'.
-    // 3. Human mentors can then review 'ai_check_passed' submissions.
-
-    const { data: submission, error } = await supabaseAdmin
-      .from('portfolio_submissions')
+    // 1. Create the project record
+    const { data: project, error } = await supabaseAdmin
+      .from('portfolio_projects')
       .insert({
         user_id: userId,
+        title: title || 'Untitled Project',
+        description: description || '',
         github_url: githubUrl,
-        demo_url: liveDemoUrl,
-        status: 'ai_check_queued',
-        submission_version: 1
+        live_demo_url: liveDemoUrl,
+        project_category: projectCategory || 'General',
+        status: 'submitted',
+        submitted_at: new Date().toISOString()
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    // XP will only be granted later when the mentor marks it as 'verified'
+    // 2. Insert Evidence rows
+    const evidenceData = [];
+    if (githubUrl) evidenceData.push({ project_id: project.id, evidence_type: 'github', url: githubUrl });
+    if (liveDemoUrl) evidenceData.push({ project_id: project.id, evidence_type: 'live_demo', url: liveDemoUrl });
+
+    if (evidenceData.length > 0) {
+      await supabaseAdmin.from('project_evidence').insert(evidenceData);
+    }
+
+    // 3. Log the event
+    await supabaseAdmin
+      .from('portfolio_verification_events')
+      .insert({
+        project_id: project.id,
+        actor_id: userId,
+        actor_type: 'learner',
+        event_type: 'submitted',
+        notes: 'Initial submission'
+      });
     
     res.json({ 
       success: true, 
-      message: 'Portfolio submitted and queued for AI verification',
-      submission 
+      message: 'Portfolio submitted and queued for verification',
+      project 
     });
   } catch (error: any) {
     console.error('Portfolio Error:', error);
