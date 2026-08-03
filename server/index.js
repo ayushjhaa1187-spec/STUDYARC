@@ -15,12 +15,12 @@ app.use(cors());
 app.use(express.json());
 
 import agentsRouter from './routes/agents.js';
-app.use('/api/agents', agentsRouter);
+import paymentsRouter from './routes/payments.js';
+import adminRouter from './routes/admin.js';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy_key_123',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_abc123'
-});
+app.use('/api/agents', agentsRouter);
+app.use('/api/payments', paymentsRouter);
+app.use('/api/admin', adminRouter);
 
 const PORT = 3001;
 
@@ -48,43 +48,6 @@ app.post('/api/apply-coupon', (req, res) => {
 });
 
 
-// Razorpay Order Creation Endpoint
-app.post('/api/create-order', async (req, res) => {
-  try {
-    const { amount, couponCode, items } = req.body;
-    
-    // Server-side calculation to prevent tampering
-    let finalAmount = amount;
-    if (couponCode && VALID_COUPONS[couponCode.toLowerCase()]) {
-      finalAmount = Math.max(0, amount - VALID_COUPONS[couponCode.toLowerCase()]);
-    }
-
-    // Razorpay amount is in paise (₹1 = 100 paise)
-    const options = {
-      amount: finalAmount * 100,
-      currency: "INR",
-      receipt: `receipt_order_${Date.now()}`,
-      notes: { items: JSON.stringify(items || []) }
-    };
-
-    const order = await razorpay.orders.create(options);
-    res.json(order);
-  } catch (error) {
-    console.error('Razorpay Error:', error);
-    // Fallback order for testing when keys are missing/invalid
-    
-    let finalAmount = req.body.amount;
-    if (req.body.couponCode && VALID_COUPONS[req.body.couponCode.toLowerCase()]) {
-      finalAmount = Math.max(0, req.body.amount - VALID_COUPONS[req.body.couponCode.toLowerCase()]);
-    }
-
-    res.json({
-      id: `order_fallback_${Date.now()}`,
-      amount: finalAmount * 100,
-      currency: "INR"
-    });
-  }
-});
 
 
 app.post('/api/chat', async (req, res) => {
