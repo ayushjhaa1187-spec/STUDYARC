@@ -1,6 +1,7 @@
 export const INITIAL_USER = {
   name: "Alex Rivera",
-  role: "AI & Full-Stack Aspirant",
+  role: "learner",
+  title: "AI & Full-Stack Aspirant",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
   readinessScore: 72,
   metrics: {
@@ -21,6 +22,32 @@ export const INITIAL_USER = {
     githubAccess: true,
     codeInspection: true,
     dataSharing: false,
+  }
+};
+
+export const INITIAL_MENTOR_USER = {
+  name: "Dr. Alex Chen",
+  role: "mentor",
+  title: "Ex-Google Staff AI Engineer",
+  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  metrics: {
+    reviewsCompleted: 45,
+    studentsHelped: 30,
+    averageRating: 4.98
+  },
+  payoutBalance: 1250,
+  upcomingSessions: 3,
+};
+
+export const INITIAL_ADMIN_USER = {
+  name: "Admin Super",
+  role: "admin",
+  title: "Platform Administrator",
+  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+  metrics: {
+    totalUsers: 1420,
+    activeMentors: 45,
+    revenue: 15400
   }
 };
 

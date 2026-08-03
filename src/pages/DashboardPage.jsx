@@ -16,9 +16,7 @@ import {
 } from 'lucide-react';
 import { AGENT_ACTIVITY_LOG, UPCOMING_SESSIONS, DAILY_TASKS } from '../data/mockData';
 
-export default function DashboardPage({ user, setActivePage, openDiagnostic, openMentorModal }) {
-  const [tasks, setTasks] = useState(DAILY_TASKS);
-
+export default function DashboardPage({ user, setActivePage, openDiagnostic, openMentorModal, tasks, setTasks }) {
   const toggleTask = (id) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
@@ -113,8 +111,8 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-white">AI Agent Portfolio Sprint</h3>
-            <p className="text-xs text-slate-400 mt-1">Day 8 of 30 | 2 remaining tasks today</p>
+            <h3 className="text-lg font-bold text-white">{user.sprintName || 'AI Agent Portfolio Sprint'}</h3>
+            <p className="text-xs text-slate-400 mt-1">Day 8 of 30 | {tasks.length - completedCount} remaining tasks today</p>
           </div>
 
           <div className="space-y-2 pt-2">

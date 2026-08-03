@@ -19,6 +19,7 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
   const navItems = [
     { id: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: '/journeys', label: 'Journeys', icon: Compass },
+    { id: '/courses', label: 'Courses', icon: Zap },
     { id: '/challenges', label: 'Challenges', icon: CheckSquare },
     { id: '/mentors', label: 'Mentors', icon: Users },
     { id: '/portfolio', label: 'Portfolio', icon: Briefcase },

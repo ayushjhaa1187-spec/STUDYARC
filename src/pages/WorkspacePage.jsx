@@ -16,9 +16,8 @@ import AICoachPanel from '../components/AICoachPanel';
 import { DAILY_TASKS } from '../data/mockData';
 import ArtifactSubmissionModal from '../components/ArtifactSubmissionModal';
 
-export default function WorkspacePage() {
+export default function WorkspacePage({ tasks, setTasks, user }) {
   const [activeTab, setActiveTab] = useState('Today');
-  const [tasks, setTasks] = useState(DAILY_TASKS);
   const [showAIChat, setShowAIChat] = useState(true);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
@@ -91,10 +90,10 @@ export default function WorkspacePage() {
 
               <div>
                 <h3 className="text-xl font-bold text-white">
-                  Implement vector search chunking strategy in RAG pipeline
+                  {tasks[0]?.title || 'Implement vector search chunking strategy in RAG pipeline'}
                 </h3>
                 <p className="text-xs text-slate-300 mt-1">
-                  Journey: AI Internship Portfolio Sprint | Challenge #4
+                  Journey: {user?.sprintName || 'AI Internship Portfolio Sprint'} | Challenge #4
                 </p>
               </div>
 

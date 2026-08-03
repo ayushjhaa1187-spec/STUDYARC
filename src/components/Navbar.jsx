@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Zap, Flame, Wifi, WifiOff, LogIn, User } from 'lucide-react';
+import { Sparkles, Zap, Flame, Wifi, WifiOff, LogIn, User, ShoppingCart, Bell } from 'lucide-react';
 
 export default function Navbar({ 
   activePage, 
@@ -7,7 +7,9 @@ export default function Navbar({
   openDiagnostic, 
   user,
   simulatedSlow,
-  setSimulatedSlow
+  setSimulatedSlow,
+  cartCount,
+  openCart
 }) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-bright-border glass-bright shadow-lg">
@@ -34,7 +36,22 @@ export default function Navbar({
         {/* Right Section */}
         <div className="flex items-center space-x-2.5">
           
+          <button 
+            onClick={openCart}
+            className="relative rounded-full p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 h-4 w-4 flex items-center justify-center rounded-full bg-brand-cyan text-[9px] font-bold text-slate-950">
+                {cartCount}
+              </span>
+            )}
+          </button>
 
+          <button className="relative hidden sm:block rounded-full p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-amber animate-pulse"></span>
+          </button>
 
           {/* Agent Online Badge */}
           <div className="hidden sm:flex items-center space-x-2 rounded-full bg-bright-card px-3 py-1 border border-brand-cyan/30">

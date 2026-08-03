@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { X, Star, Calendar, Clock, CreditCard, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
-export default function MentorModal({ mentor, isOpen, onClose }) {
+export default function MentorModal({ mentor, isOpen, onClose, cart, setCart }) {
   const [selectedType, setSelectedType] = useState('Code & Architecture Review');
   const [selectedSlot, setSelectedSlot] = useState('Today, 5:30 PM');
-  const [isBooked, setIsBooked] = useState(false);
+  const [selectedPack, setSelectedPack] = useState('1 Day Pack');
 
   if (!isOpen || !mentor) return null;
 
@@ -21,72 +21,24 @@ export default function MentorModal({ mentor, isOpen, onClose }) {
     'Aug 7, 6:00 PM'
   ];
 
-  const loadScript = (src) => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
+  const packs = [
+    { name: '1 Day Pack', price: mentor?.price || 499, desc: 'Single deeply focused session' },
+    { name: '7 Days Pack', price: (mentor?.price || 499) * 4, desc: 'A week of async support + 2 calls' }
+  ];
 
-  const handleBooking = async () => {
-    setIsBooked(true);
-
-    try {
-      const res = await fetch('http://localhost:3001/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: mentor.price, mentorId: mentor.id, slot: selectedSlot })
-      });
-      
-      const order = await res.json();
-      const isScriptLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-
-      if (!isScriptLoaded || !window.Razorpay) {
-        // Fallback simulated success if Razorpay isn't fully configured
-        alert(`Booking Confirmed with ${mentor.name} for ${selectedSlot}! A Google Meet link has been dispatched.`);
-        setIsBooked(false);
-        onClose();
-        return;
+  const handleAddToCart = () => {
+    const pack = packs.find(p => p.name === selectedPack);
+    setCart(prev => [
+      ...prev,
+      {
+        id: `mentor_${Date.now()}`,
+        type: 'Expert Mentorship',
+        title: `Session with ${mentor.name}`,
+        plan: `${selectedType} - ${selectedPack}`,
+        price: pack.price
       }
-
-      const options = {
-        key: 'rzp_test_dummy_key_123', // Matches backend mock
-        amount: order.amount,
-        currency: order.currency,
-        name: 'Agentic Execution',
-        description: `Expert Session with ${mentor.name}`,
-        order_id: order.id,
-        handler: function (response) {
-          alert(`Payment Successful! Booking Confirmed with ${mentor.name} for ${selectedSlot}!`);
-          setIsBooked(false);
-          onClose();
-        },
-        prefill: {
-          name: 'Alex Developer',
-          email: 'alex@example.com',
-          contact: '9999999999'
-        },
-        theme: {
-          color: '#35C7B8'
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        alert('Payment Failed. Please try again.');
-        setIsBooked(false);
-      });
-      rzp.open();
-    } catch (err) {
-      console.error(err);
-      // Fallback
-      alert(`Booking Confirmed with ${mentor.name} for ${selectedSlot}! (Fallback Mode)`);
-      setIsBooked(false);
-      onClose();
-    }
+    ]);
+    onClose();
   };
 
   return (
@@ -182,24 +134,46 @@ export default function MentorModal({ mentor, isOpen, onClose }) {
           </div>
         </div>
 
+        {/* Engagement Pack Selection */}
+        <div className="mt-6 space-y-3">
+          <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">3. Select Engagement Pack</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {packs.map((pack) => (
+              <div
+                key={pack.name}
+                onClick={() => setSelectedPack(pack.name)}
+                className={`cursor-pointer rounded-xl p-3 border transition ${
+                  selectedPack === pack.name
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-white">{pack.name}</span>
+                  <span className="text-xs font-black text-emerald-400">₹{pack.price}</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">{pack.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Pricing & Checkout Bar */}
         <div className="mt-6 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/80 p-4">
           <div>
             <span className="text-xs text-slate-400 font-mono">Investment</span>
             <div className="flex items-baseline space-x-1">
-              <span className="text-2xl font-black text-white">₹{mentor.price}</span>
-              <span className="text-xs text-slate-400">/ session</span>
+              <span className="text-2xl font-black text-white">₹{packs.find(p => p.name === selectedPack)?.price}</span>
             </div>
           </div>
 
           <div className="flex space-x-2">
             <button
-              onClick={handleBooking}
-              disabled={isBooked}
-              className="flex items-center space-x-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-bold text-slate-950 hover:opacity-95 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+              onClick={handleAddToCart}
+              className="flex items-center space-x-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-bold text-slate-950 hover:opacity-95 shadow-lg shadow-emerald-500/20 transition"
             >
               <CreditCard className="h-4 w-4" />
-              <span>{isBooked ? 'Confirming...' : 'Book Session'}</span>
+              <span>Add to Cart</span>
             </button>
           </div>
         </div>

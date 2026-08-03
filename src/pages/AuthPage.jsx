@@ -13,30 +13,77 @@ import {
   Code2,
   Globe
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function AuthPage({ onLoginSuccess, setActivePage }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState('student');
-  const [email, setEmail] = useState('alex.rivera@example.com');
-  const [password, setPassword] = useState('••••••••••••');
-  const [name, setName] = useState('Alex Rivera');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setAuthError('');
 
-    setTimeout(() => {
+    try {
+      let data, error;
+      
+      if (isSignUp) {
+        ({ data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name, role: role }
+          }
+        }));
+      } else {
+        ({ data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        }));
+      }
+
+      if (error) throw error;
+      
+      if (data?.user) {
+        onLoginSuccess({
+          name: data.user.user_metadata?.full_name || email.split('@')[0],
+          role: data.user.user_metadata?.role === 'student' ? 'AI & Full-Stack Aspirant' : 'Mentor Lead',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          plan: 'Pro Tier'
+        });
+        setActivePage('/dashboard');
+      }
+    } catch (err) {
+      console.error('Auth Error:', err);
+      setAuthError(err.message);
+    } finally {
       setIsLoading(false);
-      onLoginSuccess({
-        name: isSignUp ? name : 'Alex Rivera',
-        role: role === 'student' ? 'AI & Full-Stack Aspirant' : 'Mentor Lead',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        plan: 'Pro Tier'
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setAuthError('');
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
       });
-      setActivePage('/dashboard');
-    }, 1200);
+      if (error) throw error;
+      // Redirect happens automatically
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      setAuthError(err.message);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,6 +110,7 @@ export default function AuthPage({ onLoginSuccess, setActivePage }) {
               <p className="text-xs text-slate-300">
                 {isSignUp ? 'Join 15,000+ engineers building verified proof.' : 'Sign in to continue your active sprint and daily streak.'}
               </p>
+              {authError && <p className="text-xs text-red-400 mt-2 p-2 rounded bg-red-900/30 border border-red-500/30">{authError}</p>}
             </div>
 
             {/* Auth Mode Toggle Tabs */}
@@ -201,8 +249,9 @@ export default function AuthPage({ onLoginSuccess, setActivePage }) {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => handleSubmit({ preventDefault: () => {} })}
-                  className="flex items-center justify-center space-x-2 rounded-xl border border-slate-700 bg-slate-900/80 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading}
+                  className="flex items-center justify-center space-x-2 rounded-xl border border-slate-700 bg-slate-900/80 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition disabled:opacity-50"
                 >
                   <Globe className="h-4 w-4 text-cyan-400" />
                   <span>Google SSO</span>

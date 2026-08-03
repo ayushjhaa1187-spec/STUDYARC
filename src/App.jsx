@@ -17,10 +17,14 @@ import SettingsPage from './pages/SettingsPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GenericPage from './pages/GenericPage';
+import CoursesPage from './pages/CoursesPage';
+
+import ChatbotWidget from './components/ChatbotWidget';
+import CartCheckoutModal from './components/CartCheckoutModal';
 
 import { DashboardSkeleton, GridSkeleton, FeedSkeleton } from './components/SkeletonLoader';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
-import { INITIAL_USER, MENTORS } from './data/mockData';
+import { INITIAL_USER, MENTORS, DAILY_TASKS } from './data/mockData';
 
 export default function App() {
   const [activePage, setActivePage] = useState('/');
@@ -28,6 +32,9 @@ export default function App() {
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [user, setUser] = useState(INITIAL_USER);
+  const [sprintTasks, setSprintTasks] = useState(DAILY_TASKS);
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const lenis = useLenis();
   const { 
     isSlowConnection, 
@@ -54,8 +61,24 @@ export default function App() {
     setUser(prev => ({
       ...prev,
       readinessScore: result.score,
-      role: result.targetRole
+      role: result.targetRole,
+      sprintName: result.recommendedJourney
     }));
+    
+    // Generate Sprint Tasks based on Gap Analysis
+    const generatedTasks = result.gapAnalysis.map((gap, idx) => ({
+      id: 100 + idx,
+      title: 'Address Gap: ' + gap.replace(/\.$/, ''),
+      journey: result.recommendedJourney,
+      difficulty: idx === 0 ? 'Easy' : (idx === 1 ? 'Medium' : 'Hard'),
+      estimate: (idx + 1) + 'h',
+      completed: false,
+      dueTime: 'Today'
+    }));
+    
+    // Use generated tasks + mock tasks for fullness
+    setSprintTasks([...generatedTasks, ...DAILY_TASKS.slice(1)]);
+    
     handlePageChange('/dashboard');
   };
 
@@ -74,6 +97,8 @@ export default function App() {
           user={user}
           simulatedSlow={simulatedSlow}
           setSimulatedSlow={setSimulatedSlow}
+          cartCount={cart.length}
+          openCart={() => setIsCartOpen(true)}
         />
       )}
 
@@ -129,6 +154,8 @@ export default function App() {
                   setActivePage={handlePageChange}
                   openDiagnostic={() => setIsDiagnosticOpen(true)}
                   openMentorModal={openMentorModal}
+                  tasks={sprintTasks}
+                  setTasks={setSprintTasks}
                 />
               )}
 
@@ -136,8 +163,16 @@ export default function App() {
                 <JourneysPage setActivePage={handlePageChange} />
               )}
 
+              {activePage === '/courses' && (
+                <CoursesPage cart={cart} setCart={setCart} />
+              )}
+
               {activePage === '/challenges' && (
-                <WorkspacePage />
+                <WorkspacePage 
+                  tasks={sprintTasks}
+                  setTasks={setSprintTasks}
+                  user={user}
+                />
               )}
 
               {activePage === '/mentors' && (
@@ -197,7 +232,19 @@ export default function App() {
         mentor={selectedMentor}
         isOpen={!!selectedMentor}
         onClose={() => setSelectedMentor(null)}
+        cart={cart}
+        setCart={setCart}
       />
+
+      <CartCheckoutModal
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cart={cart}
+        setCart={setCart}
+      />
+
+      {/* Global Support Chatbot */}
+      <ChatbotWidget />
 
     </div>
   );

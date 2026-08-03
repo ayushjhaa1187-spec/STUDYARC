@@ -10,6 +10,7 @@ CREATE TABLE public.users (
     full_name TEXT,
     avatar_url TEXT,
     reputation_score INTEGER DEFAULT 0,
+    role TEXT DEFAULT 'learner' CHECK (role IN ('learner', 'mentor', 'admin')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
@@ -151,3 +152,19 @@ CREATE TABLE public.expert_bookings (
 ALTER TABLE public.expert_bookings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own bookings" ON public.expert_bookings FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own bookings" ON public.expert_bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 9. Mentors Profile Table
+CREATE TABLE public.mentors_profile (
+    id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+    verification_status TEXT DEFAULT 'pending' CHECK (verification_status IN ('pending', 'verified', 'rejected')),
+    quality_score NUMERIC(3, 1) DEFAULT 5.0,
+    availability JSONB DEFAULT '[]'::jsonb,
+    payout_status TEXT DEFAULT 'active' CHECK (payout_status IN ('active', 'suspended')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.mentors_profile ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Mentors can view own profile" ON public.mentors_profile FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Mentors can update own profile" ON public.mentors_profile FOR UPDATE USING (auth.uid() = id);
+-- Admins will have a bypass policy or use a custom claim to view all mentor profiles.
+
