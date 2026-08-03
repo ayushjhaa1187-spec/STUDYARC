@@ -44,6 +44,19 @@ export const completeTask = async (req: AuthRequest, res: Response) => {
 
     if (updateError) throw updateError;
 
+    // Gamification Integration: Award XP
+    try {
+      await supabaseAdmin.rpc('grant_xp', {
+        p_user_id: userId,
+        p_event: 'task_complete',
+        p_ref_id: taskId,
+        p_xp: 15 // Assuming 15 XP for a task
+      });
+    } catch (xpError) {
+      console.warn("Failed to award XP:", xpError);
+      // We don't throw, as the task is already completed
+    }
+
     res.json({ success: true, task: updatedTask });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to complete task', details: error.message });

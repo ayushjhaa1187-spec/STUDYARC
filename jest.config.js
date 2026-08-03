@@ -7,10 +7,15 @@ export default {
       'ts-jest',
       {
         useESM: true,
+        tsconfig: 'tsconfig.server.json',
       },
     ],
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  modulePathIgnorePatterns: [
+    '<rootDir>/dist/',
+    '<rootDir>/dist-server/'
+  ]
 };

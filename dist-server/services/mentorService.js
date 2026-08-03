@@ -25,34 +25,15 @@ export class MentorService {
         });
         return mentors;
     }
-    /**
-     * Heuristic Mentor Matching Algorithm
-     * Scores mentors based on skill intersection, quality score, and availability.
-     * Time Complexity: O(M * S) where M is mentors, S is requested skills.
-     */
     static async getMatches(requestedSkills, minimumScore = 4.0) {
-        const mentors = await this.getVerifiedMentors();
-        if (!mentors)
-            return [];
-        const scoredMentors = mentors
-            .filter((m) => m.quality_score >= minimumScore)
-            .map((m) => {
-            // Jaccard-like similarity for skills
-            const mentorSkills = m.availability?.skills || [];
-            const intersection = requestedSkills.filter(s => mentorSkills.includes(s));
-            // Base score = quality (out of 5) * 20 -> 0-100
-            let score = (m.quality_score || 0) * 20;
-            // Bonus for matching skills (up to 50 points)
-            if (requestedSkills.length > 0) {
-                const matchRatio = intersection.length / requestedSkills.length;
-                score += matchRatio * 50;
-            }
-            return {
-                ...m,
-                matchScore: Math.min(Math.round(score), 100)
-            };
-        })
-            .sort((a, b) => b.matchScore - a.matchScore);
-        return scoredMentors;
+        // Import dynamically to avoid circular issues if any, or just import at top
+        const { getTopMentors } = await import('./algorithms/mentorMatching.js');
+        // We pass a very high budget default just to return top quality matches if not specified
+        const matches = await getTopMentors({
+            requiredTags: requestedSkills,
+            budget: 100000
+        });
+        // Optionally filter by minimumScore if strictly required by old API
+        return matches.filter((m) => m.rating >= minimumScore);
     }
 }

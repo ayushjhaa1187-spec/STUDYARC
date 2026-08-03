@@ -75,9 +75,11 @@ export function generateSprintPlan(tasks: TaskNode[], weeklyHours: number) {
     let currDay = 1;
     let currDayMins = 0;
     let overloaded = false;
+    let processedCount = 0;
 
     while (!queue.isEmpty()) {
         const task = queue.pop()!;
+        processedCount++;
 
         // Move to next day if capacity exceeded
         if (currDayMins + task.estimated_minutes > dailyMinutesCap && currDayMins > 0) {
@@ -100,6 +102,11 @@ export function generateSprintPlan(tasks: TaskNode[], weeklyHours: number) {
                 queue.push(taskMap[neighbor]);
             }
         });
+    }
+
+    // Cycle detection: If we didn't process all tasks and we aren't overloaded, there's a cycle
+    if (processedCount < tasks.length && !overloaded) {
+        throw new Error("Cycle detected in task dependencies!");
     }
 
     return { sprintPlan, overloaded };

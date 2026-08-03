@@ -35,23 +35,59 @@ serve(async (req) => {
 
     if (fetchError || !assessment) throw fetchError
 
-    // Call Gemini (Mocking the call for now due to lack of API Key in Deno env directly)
-    // In production, we'd use fetch to POST to https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent
-    
-    // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Call Gemini API
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
+    }
 
-    const aiOutput = {
-      career_map: "Based on your goal to get an AI internship, we recommend focusing on Python, ML basics, and building projects.",
-      recommended_sprint: {
-        name: "AI Internship Prep",
-        duration_days: 14,
-        daily_tasks: Array.from({ length: 14 }).map((_, i) => ({
-          day: i + 1,
-          title: `Task for Day ${i + 1}`,
-          description: `Learn and implement concepts for Day ${i + 1}.`
-        }))
-      }
+    const prompt = `You are an expert career coach for Indian students. A student has taken a career diagnostic.
+Based on their assessment, generate a personalized 14-day sprint. 
+Assessment details: ${JSON.stringify(assessment)}
+
+Provide a structured JSON output with the following schema:
+{
+  "career_map": "Brief encouraging analysis of their goals",
+  "recommended_sprint": {
+    "name": "Sprint title",
+    "duration_days": 14,
+    "daily_tasks": [
+      { "day": 1, "title": "Task title", "description": "Actionable task description" }
+    ]
+  }
+}
+Return ONLY valid JSON, no markdown blocks.`;
+
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          response_mime_type: "application/json"
+        }
+      })
+    });
+
+    if (!geminiResponse.ok) {
+      const errText = await geminiResponse.text();
+      console.error("Gemini Error:", errText);
+      throw new Error('Failed to generate AI sprint');
+    }
+
+    const geminiData = await geminiResponse.json();
+    let aiOutput = null;
+
+    try {
+      const responseText = geminiData.candidates[0].content.parts[0].text;
+      aiOutput = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse Gemini output:", e, geminiData);
+      throw new Error('AI returned invalid JSON');
     }
 
     // Update assessment with AI output
