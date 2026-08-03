@@ -15,12 +15,16 @@ jest.unstable_mockModule('../config/razorpay.js', () => ({
 
 // Import after mock
 const { verifyWebhookSignature } = await import('../config/razorpay.js');
-const apiRoutes = (await import('../routes/index.js')).default;
+const diagnosticsRouter = (await import('../routes/diagnostics.js')).default;
+const paymentsRouter = (await import('../routes/payments.js')).default;
+const authRouter = (await import('../routes/auth.js')).default;
 
 // Setup Mock Express App for testing
 const app = express();
 app.use(express.json());
-app.use('/api', apiRoutes);
+app.use('/api/me', authRouter);
+app.use('/api', diagnosticsRouter);
+app.use('/api/payments', paymentsRouter);
 
 describe('SkillBridge Pro Backend Tests', () => {
 
