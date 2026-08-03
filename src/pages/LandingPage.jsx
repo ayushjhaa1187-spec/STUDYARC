@@ -78,13 +78,9 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
     <div className="min-h-screen bg-[#0C0F14] text-white selection:bg-brand-teal selection:bg-opacity-30">
       
       {/* 1. Hero Section */}
-      <section className="relative min-h-screen flex flex-col hero-gradient overflow-hidden">
-        {/* Animated Background Orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-teal rounded-full mix-blend-screen filter blur-[120px] opacity-10 animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-brand-violet rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-brand-amber rounded-full mix-blend-screen filter blur-[100px] opacity-10 animate-pulse" style={{ animationDelay: '4s' }}></div>
-        </div>
+      <section className="relative min-h-screen flex flex-col hero-mesh overflow-hidden">
+        {/* Animated Background Mesh (Handled by hero-mesh CSS) */}
+
 
         {/* Custom Navbar */}
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 md:px-12 border-b border-white/5 backdrop-blur-md bg-[#0C0F14]/50">
@@ -124,7 +120,7 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
           <div className="flex flex-col sm:flex-row items-center gap-4 animate-slide-up-delay-3 w-full sm:w-auto">
             <button 
               onClick={openDiagnostic}
-              className="w-full sm:w-auto px-8 py-4 bg-brand-teal hover:bg-[#2bb4a5] text-black font-bold rounded-full transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(53,199,184,0.3)]"
+              className="w-full sm:w-auto px-8 py-4 bg-brand-teal hover:bg-[#2bb4a5] text-black font-bold rounded-full transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(53,199,184,0.3)] btn-sheen"
             >
               Get My Free Career Diagnostic
               <ArrowRight className="w-5 h-5" />
@@ -168,9 +164,9 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
           </div>
         </FadeInSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
           <FadeInSection delay={0}>
-            <div className="glass-bright rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-indigo/50 transition-colors">
+            <div className="glass-premium rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-indigo/50 transition-colors preserve-3d hover-tilt transition-transform-slow">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/10 rounded-bl-full blur-2xl"></div>
               <div className="w-14 h-14 rounded-xl bg-brand-indigo/20 flex items-center justify-center text-brand-indigo mb-6">
                 <BookOpen className="w-7 h-7" />
@@ -184,7 +180,7 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
           </FadeInSection>
           
           <FadeInSection delay={150}>
-            <div className="glass-bright rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-teal/50 transition-colors">
+            <div className="glass-premium rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-teal/50 transition-colors preserve-3d hover-tilt transition-transform-slow">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-teal/10 rounded-bl-full blur-2xl"></div>
               <div className="w-14 h-14 rounded-xl bg-brand-teal/20 flex items-center justify-center text-brand-teal mb-6">
                 <Bot className="w-7 h-7" />
@@ -198,7 +194,7 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
           </FadeInSection>
 
           <FadeInSection delay={300}>
-            <div className="glass-bright rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-amber/50 transition-colors">
+            <div className="glass-premium rounded-2xl p-8 border border-bright-border h-full flex flex-col relative overflow-hidden group hover:border-brand-amber/50 transition-colors preserve-3d hover-tilt transition-transform-slow">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-amber/10 rounded-bl-full blur-2xl"></div>
               <div className="w-14 h-14 rounded-xl bg-brand-amber/20 flex items-center justify-center text-brand-amber mb-6">
                 <Users className="w-7 h-7" />
@@ -230,10 +226,10 @@ export default function LandingPage({ setActivePage, openDiagnostic }) {
           </div>
         </FadeInSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 perspective-1000">
           {featuredJourneys.map((journey, idx) => (
             <FadeInSection key={journey.id} delay={idx * 150}>
-              <div className="glass-bright rounded-2xl border border-bright-border overflow-hidden hover:border-brand-teal/30 transition-all duration-300 flex flex-col h-full group">
+              <div className="glass-premium rounded-2xl border border-bright-border overflow-hidden hover:border-brand-teal/30 transition-all duration-300 flex flex-col h-full group hover-tilt preserve-3d transition-transform-slow">
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
                     <span className={`category-pill category-pill-${journey.category.toLowerCase().replace(/\s+/g, '-')}`}>

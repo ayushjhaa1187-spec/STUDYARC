@@ -36,7 +36,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
     <div className="space-y-6 pb-16">
 
       {/* ── Welcome Header ─────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl glass-bright card-glow-cyan p-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl glass-premium card-glow-cyan p-6">
         <div>
           <div className="flex items-center gap-2 text-xs text-brand-teal font-mono uppercase tracking-widest font-bold">
             <Sparkles className="h-4 w-4 text-brand-amber animate-pulse" />
@@ -76,14 +76,14 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
           { label: 'XP Earned', value: `${(user?.xp || 3450).toLocaleString()}`, sub: `Level ${user?.level || 14}`, icon: Zap, color: 'text-brand-indigo', bg: 'bg-brand-indigo/10', border: 'border-brand-indigo/20' },
           { label: 'Verified Projects', value: `${user?.metrics?.verifiedProofs || 3}`, sub: 'portfolio items', icon: Shield, color: 'text-brand-cyan', bg: 'bg-brand-cyan/10', border: 'border-brand-cyan/20' },
         ].map(({ label, value, sub, icon: Icon, color, bg, border }) => (
-          <div key={label} className={`glass-bright p-4 rounded-2xl border ${border} flex items-center gap-3`}>
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bg}`}>
-              <Icon className={`h-5 w-5 ${color}`} />
+          <div key={label} className={`glass-premium p-4 rounded-2xl border ${border} flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20 hover-glow-${color.split('-')[2]}`}>
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${bg}`}>
+              <Icon className={`h-6 w-6 ${color}`} />
             </div>
             <div>
-              <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">{label}</p>
-              <p className="text-xl font-black text-white leading-tight">{value}</p>
-              <p className="text-[10px] text-slate-400">{sub}</p>
+              <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">{label}</p>
+              <p className="text-2xl font-black text-white leading-tight">{value}</p>
+              <p className="text-[10px] text-slate-400 font-medium">{sub}</p>
             </div>
           </div>
         ))}
@@ -93,7 +93,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* CARD 1: Active Sprint */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-cyan transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-cyan transition-all duration-300 stagger-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">Active Sprint</span>
             <span className="rounded-full bg-brand-cyan/10 px-2.5 py-0.5 text-[10px] font-mono text-brand-cyan border border-brand-cyan/20 animate-pulse">In Progress</span>
@@ -121,7 +121,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
         </div>
 
         {/* CARD 2: Today's Tasks */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-amber transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-amber transition-all duration-300">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">Today's Tasks</span>
             <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
         </div>
 
         {/* CARD 3: Gemini Agent Activity */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-indigo transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-indigo transition-all duration-300 stagger-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">Gemini Agent Feed</span>
             <span className="flex items-center gap-1.5 text-[10px] text-brand-indigo font-mono bg-brand-indigo/10 px-2.5 py-0.5 rounded-full border border-brand-indigo/20">
@@ -195,7 +195,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
         </div>
 
         {/* CARD 4: Upcoming Expert Sessions */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-rose transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-rose transition-all duration-300 stagger-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">Expert Sessions</span>
             <button
@@ -233,7 +233,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
         </div>
 
         {/* CARD 5: Courses In Progress */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-emerald transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-emerald transition-all duration-300 stagger-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">Courses In Progress</span>
             <button onClick={() => setActivePage('/catalog')} className="text-[10px] text-brand-teal font-mono bg-brand-teal/10 px-2.5 py-0.5 rounded border border-brand-teal/30 hover:text-white transition-all">
@@ -283,7 +283,7 @@ export default function DashboardPage({ user, setActivePage, openDiagnostic, ope
         </div>
 
         {/* CARD 6: XP & Streaks Heatmap */}
-        <div className="glass-bright p-6 space-y-4 hover:card-glow-amber transition-all duration-300">
+        <div className="glass-premium p-6 space-y-4 hover:card-glow-amber transition-all duration-300">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wide">XP & Streaks</span>
             <div className="flex items-center gap-1 text-brand-amber font-bold text-xs bg-brand-amber/10 px-2.5 py-0.5 rounded border border-brand-amber/20">

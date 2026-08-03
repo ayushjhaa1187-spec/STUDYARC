@@ -256,7 +256,7 @@ export default function DiagnosticModal({ isOpen, onClose, onComplete }) {
         {/* Step 4: Diagnostic Result */}
         {step === 4 && result && (
           <div className="mt-6 space-y-5">
-            <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <div className="scanline-container flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <div>
                 <span className="text-xs font-mono text-emerald-400 uppercase">Target Readiness Score</span>
                 <div className="flex items-baseline space-x-2">
@@ -264,8 +264,8 @@ export default function DiagnosticModal({ isOpen, onClose, onComplete }) {
                   <span className="text-xs text-emerald-400">Ready for Junior/Mid AI Roles</span>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-full border-2 border-emerald-400 flex items-center justify-center bg-slate-900 font-bold text-emerald-400">
-                <BarChart3 className="h-6 w-6" />
+              <div key={label} className={`rounded-xl border p-3 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 ${border}`}>
+                <BarChart3 className="h-6 w-6 text-emerald-400" />
               </div>
             </div>
 
@@ -283,7 +283,7 @@ export default function DiagnosticModal({ isOpen, onClose, onComplete }) {
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
               <span className="text-xs font-mono text-teal-400">RECOMMENDED PATHWAY</span>
-              <h5 className="text-base font-bold text-white mt-1">{result.recommendedJourney}</h5>
+              <h5 className="text-base font-bold text-white mt-1 typing-glitch">{result.recommendedJourney}</h5>
               <p className="text-xs text-slate-400 mt-0.5">Duration: {result.timeToProof} | Outcome: 2 Verified Portfolio Apps</p>
             </div>
 
