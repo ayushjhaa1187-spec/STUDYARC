@@ -35,7 +35,7 @@ export default function CartCheckoutModal({ isOpen, onClose, cart, setCart }) {
     if (!couponCode) return;
     setCouponMsg('Checking...');
     try {
-      const res = await fetch('http://localhost:3001/api/apply-coupon', {
+      const res = await fetch('http://localhost:3001/api/payments/apply-coupon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode })
@@ -69,7 +69,7 @@ export default function CartCheckoutModal({ isOpen, onClose, cart, setCart }) {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/create-order', {
+      const res = await fetch('http://localhost:3001/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: totalAmount, couponCode, items: cart })

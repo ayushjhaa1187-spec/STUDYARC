@@ -199,4 +199,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   }
 });
 
+router.post('/apply-coupon', (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+  
+  const discount = VALID_COUPONS[code.toLowerCase()];
+  if (discount) {
+    res.json({ valid: true, discount, message: `Coupon applied! ₹${discount} off.` });
+  } else {
+    res.json({ valid: false, discount: 0, message: 'Invalid coupon code.' });
+  }
+});
+
 export default router;
