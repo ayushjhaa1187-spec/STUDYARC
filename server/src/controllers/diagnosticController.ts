@@ -8,7 +8,7 @@ export const evaluateDiagnostic = async (req: AuthRequest, res: Response) => {
     const userId = req.user.id;
     const { targetRole, weeklyHours, skills, experienceLevel } = req.body;
 
-    const assessment = await DiagnosticService.processDiagnostic(
+    const diagnostic = await DiagnosticService.processDiagnostic(
       userId,
       targetRole,
       weeklyHours,
@@ -16,7 +16,7 @@ export const evaluateDiagnostic = async (req: AuthRequest, res: Response) => {
       experienceLevel
     );
 
-    res.json({ success: true, assessment });
+    res.json({ success: true, diagnostic });
 
   } catch (error: any) {
     logger.error('Diagnostic Evaluation Error:', { error: error.message, stack: error.stack });

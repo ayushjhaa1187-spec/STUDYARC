@@ -5,16 +5,16 @@ import { supabaseAdmin } from '../config/supabase.js';
 export const getActiveSprints = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
-    const { data: sprints, error } = await supabaseAdmin
-      .from('sprints')
-      .select('*, tasks(*)')
+    const { data: journeys, error } = await supabaseAdmin
+      .from('user_journeys')
+      .select('*, user_tasks(*)')
       .eq('user_id', userId)
       .eq('status', 'active');
 
     if (error) throw error;
-    res.json(sprints);
+    res.json(journeys);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch sprints', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch active journeys', details: error.message });
   }
 };
 
@@ -22,27 +22,37 @@ export const completeTask = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
     const { taskId } = req.params;
-    const { proofUrl } = req.body;
+    const { proofUrl } = req.body; // In new schema, proof might be in task_activity metadata
 
-    // Verify task belongs to user's sprint
+    // Verify task belongs to user's journey
     const { data: task, error: taskError } = await supabaseAdmin
-      .from('tasks')
-      .select('*, sprints!inner(user_id)')
+      .from('user_tasks')
+      .select('*, user_journeys!inner(user_id)')
       .eq('id', taskId)
       .single();
 
-    if (taskError || task.sprints.user_id !== userId) {
+    if (taskError || task.user_journeys.user_id !== userId) {
       return res.status(403).json({ error: 'Unauthorized to update this task' });
     }
 
     const { data: updatedTask, error: updateError } = await supabaseAdmin
-      .from('tasks')
-      .update({ is_completed: true, proof_url: proofUrl })
+      .from('user_tasks')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
       .eq('id', taskId)
       .select()
       .single();
 
     if (updateError) throw updateError;
+
+    // Log the activity
+    await supabaseAdmin
+      .from('task_activity')
+      .insert({
+        task_id: taskId,
+        user_id: userId,
+        activity_type: 'completed',
+        metadata: { proofUrl }
+      });
 
     // Gamification Integration: Award XP
     try {
